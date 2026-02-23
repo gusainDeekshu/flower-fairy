@@ -1,19 +1,29 @@
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
 import { 
-  HeroSection, QuickCategoriesRow, OccasionGrid, 
-  BestSellingSection, EventGiftingGuide, WhatsAppCTASection 
+  HeroBanner, CategoryRow, OccasionGrid, ProductShowcase, 
+  SpecialOffer, InfoCards, EventGiftingGuide, TeddyPromo, 
+  Testimonials, BlogSection,  WhatsAppCTA
 } from "@/components/home/HomeSections";
 
 export default function Home() {
   return (
-    <main className="min-h-screen">
-      <HeroSection />
-      <div className="space-y-8 px-5 pt-6">
-        <QuickCategoriesRow />
+    <main className="min-h-screen bg-white">
+      {/* <Header /> */}
+      <div className="max-w-7xl mx-auto px-4 md:px-12 pb-20">
+        <HeroBanner />
+        <CategoryRow />
         <OccasionGrid />
-        <BestSellingSection />
+        <ProductShowcase title="Best Selling Flowers & Gifts" />
+        <SpecialOffer />
+        <InfoCards />
         <EventGiftingGuide />
-        <WhatsAppCTASection />
+        <TeddyPromo />
+        <Testimonials />
+        <BlogSection />
+        <WhatsAppCTA />
       </div>
+      {/* <Footer /> */}
     </main>
   );
 }
