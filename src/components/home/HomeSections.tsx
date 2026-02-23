@@ -100,7 +100,7 @@ export function ProductShowcase({ title }: { title: string }) {
             <Badge className="absolute top-3 left-0 rounded-l-none bg-[#006044] px-3 py-1 text-[10px] font-bold z-10">SALE</Badge>
             <button className="absolute top-3 right-3 p-1.5 bg-white/90 rounded-full text-slate-400 hover:text-red-500 z-10 shadow-sm"><Heart size={16} /></button>
             <div className="aspect-[4/5] bg-slate-50 overflow-hidden">
-              <img src="https://images.unsplash.com/photo-1522673607200-1648832cee77?auto=format&fit=crop&q=60&w=400" className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Product" />
+              <img src="https://plus.unsplash.com/premium_photo-1661609624774-764931dee3af?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Product" />
             </div>
             <div className="p-4 flex flex-col gap-1">
               <h3 className="text-xs font-bold text-slate-800 truncate">Premium Roses Bouquet</h3>
