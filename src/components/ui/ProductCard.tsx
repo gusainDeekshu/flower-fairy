@@ -1,8 +1,11 @@
 import { Star, Heart } from 'lucide-react';
+import Link from 'next/link';
 
 export default function ProductCard({ product }: any) {
   return (
+
     <div className="bg-white rounded-xl border border-gray-100 overflow-hidden group hover:shadow-lg transition-all duration-300 relative">
+      <Link href={`/product/${product.slug}`} prefetch={true}>
       <div className="absolute top-3 left-0 bg-[#006044] text-white text-[10px] font-bold px-3 py-1 rounded-r-full z-10">SALE</div>
       <button className="absolute top-3 right-3 p-1.5 bg-white/90 rounded-full shadow-sm hover:text-red-500 z-10 transition-colors">
         <Heart size={16} />
@@ -26,6 +29,7 @@ export default function ProductCard({ product }: any) {
           Add to Cart
         </button>
       </div>
+      </Link>
     </div>
   );
 }

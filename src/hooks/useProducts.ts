@@ -1,19 +1,24 @@
+// src/hooks/useProducts.ts
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 
 export function useProducts(categorySlug?: string) {
-  console.log('Fetching products for category:', categorySlug);
   return useQuery({
-    queryKey: ['store-catalog', 'flower-fairy-dehradun', categorySlug],
+    // Keep keys consistent with your console error: ["products", "store", slug]
+    queryKey: ['products', 'flower-fairy-dehradun', categorySlug || null],
     queryFn: async () => {
-      // Calls your ProductsService.getStoreCatalog backend method
+      // apiClient already returns response.data due to your interceptor
       const data: any = await apiClient.get('/products/catalog/flower-fairy-dehradun');
       
-      if (categorySlug) {
-        return data.products.filter((p: any) => p.category.slug === categorySlug);
+      // Ensure we always return an array, never undefined
+      const products = data?.products || data || []; 
+
+      if (categorySlug && Array.isArray(products)) {
+        return products.filter((p: any) => p.category?.slug === categorySlug);
       }
-      return data.products;
+      
+      return products;
     },
-    staleTime: 1000 * 60 * 10, // Cache on client for 10 minutes
+    staleTime: 1000 * 60 * 10,
   });
 }

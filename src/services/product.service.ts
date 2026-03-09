@@ -13,15 +13,18 @@ export interface Product {
     priceModifier: number;
   }[];
 }
-
-export const ProductApi = {
-  // Fetch products, optionally filtered by category slug
-  getProducts: async (category?: string): Promise<Product[]> => {
+export class ProductApi {
+  static async getProducts(category?: string): Promise<Product[]> {
     return apiClient.get('/products', { params: { category } });
-  },
-  
-  // Fetch a single product by slug for the details page
-  getProductBySlug: async (slug: string): Promise<Product> => {
-    return apiClient.get(`/products/${slug}`);
   }
-};
+  
+  static async getProductBySlug(slug: string) {
+    try {
+      const response = await apiClient.get(`/products/${slug}`);
+      return response; 
+    } catch (error) {
+      console.error(`Error fetching product ${slug}:`, error);
+      return null;
+    }
+  }
+}
