@@ -12,7 +12,7 @@ export default function ProductCard({ product }: any) {
       </button>
 
       <div className="aspect-[4/5] overflow-hidden">
-        <img src={product.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={product.name} />
+        <img src={product.images[0]} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={product.name} />
       </div>
 
       <div className="p-4">
