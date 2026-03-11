@@ -1,36 +1,105 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌸 Flower Fairy Frontend
 
-## Getting Started
+A professional, high-performance e-commerce storefront built with **Next.js 15**, **TypeScript**, and **Tailwind CSS**. This application is designed to provide a seamless shopping experience for premium gift items like flowers, cakes, and personalized gifts. It features a robust state management system using **TanStack Query** and a type-safe architecture powered by **Zod**.
 
-First, run the development server:
+🔗 **[Live Demo](https://flower-fairy-murex.vercel.app)** | 🖥️ **[GitHub Repository](https://github.com/gusainDeekshu/flower-fairy)**
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## ✨ Features
+
+* **⚡ Modern Frontend Stack:** Built on **Next.js 15** with the App Router for optimal performance and SEO.
+* **🛍️ Product Management:** Dynamic product listing and details pages with support for variants and attributes.
+* **🛒 Shopping Cart:** Fully functional cart system with local storage persistence and server-side synchronization.
+* **🎨 Dynamic Branding:** Customizable theme configuration to support multiple store identities.
+* **🔄 Asynchronous State:** Optimized data fetching, caching, and background synchronization using **React Query**.
+* **✅ Type-Safe Validation:** Frontend data validation and schema enforcement using **Zod**.
+* **📱 Fully Responsive:** Mobile-first design using **Tailwind CSS** and **Shadcn UI** components.
+
+---
+
+## 🛠️ Tech Stack
+
+| Category | Technology |
+| --- | --- |
+| **Framework** | Next.js 15 (App Router) |
+| **Language** | TypeScript |
+| **Styling** | Tailwind CSS + Shadcn UI |
+| **State Management** | TanStack Query (React Query) |
+| **Form/Schema Validation** | Zod |
+| **HTTP Client** | Axios |
+
+---
+
+## 📂 Folder Structure Overview
+
+```text
+src/
+├── app/            # Next.js App Router: pages, layouts, and API routes
+├── components/     # UI components organized by feature (home, product, layout)
+│   ├── ui/         # Shadcn-based atomic UI components
+├── hooks/          # Custom React hooks for products and cart logic
+├── lib/            # Shared utilities and API client configuration
+├── schemas/        # Zod validation schemas for products and orders
+├── services/       # API integration layer for products and cart
+└── config/         # Brand-specific configurations and constants
+
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🚀 Getting Started
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 1. Prerequisites
 
-## Learn More
+* **Node.js** (v20+ recommended)
+* **npm** or **pnpm**
+* A running instance of the [Flower Fairy Backend](https://www.google.com/search?q=https://github.com/gusainDeekshu/flower-fairy-backend)
 
-To learn more about Next.js, take a look at the following resources:
+### 2. Installation
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+# Clone the repository
+git clone https://github.com/gusainDeekshu/flower-fairy.git
+cd flower-fairy
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Install dependencies
+npm install
 
-## Deploy on Vercel
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 3. Environment Variables
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Create a `.env.local` file in the root directory and add the following:
+
+```env
+NEXT_PUBLIC_API_URL="http://localhost:4000/api/v1"
+
+```
+
+### 4. Running Locally
+
+```bash
+# Development mode
+npm run dev
+
+# Production build
+npm run build
+npm run start
+
+```
+
+---
+
+## 👤 Author
+
+**Deekshant Gusain**
+
+* **GitHub**: [@gusainDeekshu](https://www.google.com/search?q=https://github.com/gusainDeekshu)
+* **Portfolio**: [beastdrive.in](https://beastdrive.in)
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License**.
