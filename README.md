@@ -93,7 +93,7 @@ npm run dev
 **Deekshant Gusain**
 
 * **GitHub**: [@gusainDeekshu](https://www.google.com/search?q=https://github.com/gusainDeekshu)
-* **Portfolio**: [beastdrive.in](https://beastdrive.in)
+* **Portfolio**: [deekshantportfoliosite.netlify.app](https://deekshantportfoliosite.netlify.app/)
 
 ---
 
