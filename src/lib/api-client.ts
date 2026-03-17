@@ -1,72 +1,115 @@
+// src/lib/api-client.ts
 import { useAuthStore } from '@/store/useAuthStore';
-import axios from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
 
-export const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
+// --- Types ---
+interface RefreshResponse {
+  access_token: string;
+}
+
+// --- Queue Management for Concurrent Refresh Calls ---
+let isRefreshing = false;
+let failedQueue: any[] = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) prom.reject(error);
+    else prom.resolve(token);
+  });
+  failedQueue = [];
+};
+
+// --- Instance Creation ---
+export const apiClient: AxiosInstance = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1',
   timeout: 10000,
-  withCredentials: true, // MANDATORY for receiving/sending HttpOnly cookies
+  withCredentials: true, // Crucial for HttpOnly Cookies
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Request Interceptor: Attach the in-memory Access Token
-apiClient.interceptors.request.use((config) => {
-  const token = useAuthStore.getState().accessToken;
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+// --- Request Interceptor ---
+apiClient.interceptors.request.use(
+  (config: InternalAxiosRequestConfig) => {
+    const token = useAuthStore.getState().accessToken;
 
-// Response Interceptor: Handle Data Extraction and Token Rotation
+    // DEBUG LOG: Frontend Request Sending
+    console.log(`🚀 [API Request] ${config.method?.toUpperCase()} ${config.url}`);
+    console.log(`🔑 [API Token Status] ${token ? 'Token Attached' : 'No Token Found'}`);
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// --- Response Interceptor ---
 apiClient.interceptors.response.use(
-  (response) => response.data, 
+  (response) => {
+    console.log(`✅ [API Success] ${response.status} from ${response.config.url}`);
+    return response.data; // Flattens the response so you don't need .data in services
+  },
   async (error) => {
-    const status = error.response?.status;
     const originalRequest = error.config;
-    let message = "An unexpected error occurred";
+    const status = error.response?.status;
 
     // --- TOKEN ROTATION LOGIC ---
-    // If 401 Unauthorized and we haven't tried refreshing yet
     if (status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
       
+      // If a refresh is already in progress, add this request to the queue
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            return apiClient(originalRequest);
+          })
+          .catch((err) => Promise.reject(err));
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
       try {
-        // Attempt to get a new access token using the Refresh Cookie
-        const refreshResponse = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, 
-          {}, 
+        console.log("🔄 [Auth] Access token expired. Attempting silent refresh...");
+
+        // Call standard axios directly to avoid interceptor recursion
+        const refreshResponse = await axios.post<RefreshResponse>(
+          `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
+          {},
           { withCredentials: true }
         );
 
         const newAccessToken = refreshResponse.data.access_token;
-        
-        // Update the Zustand store with the new token
-        useAuthStore.getState().setAccessToken(newAccessToken);
 
-        // Update the header and retry the original failed request
+        // Update Zustand Store (In-memory)
+        useAuthStore.getState().setAccessToken(newAccessToken);
+        
+        // Process the queue with the new token
+        processQueue(null, newAccessToken);
+        
+        // Update current request and retry
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return apiClient(originalRequest);
+        
       } catch (refreshError) {
-        // Refresh failed (cookie expired or invalid) -> Logout user
+        console.error("❌ [Auth] Refresh failed. Session invalid.");
+        processQueue(refreshError, null);
         useAuthStore.getState().logout();
         return Promise.reject("Session expired. Please login again.");
+      } finally {
+        isRefreshing = false;
       }
     }
 
     // --- GLOBAL ERROR HANDLING ---
-    if (status === 500) {
-      message = "🌸 Something went wrong on our end. Please try again later.";
-    } else if (status === 403) {
-      message = "You do not have permission to perform this action.";
-    } else if (status === 401) {
-      message = error.response?.data?.message || "Please login to continue.";
-    } else {
-      message = error.response?.data?.message || error.message || message;
-    }
-
-    console.error(`[API Error ${status}]:`, error.response?.data || error.message);
-    return Promise.reject(message);
+    const errorMessage = error.response?.data?.message || error.message || "An unexpected error occurred";
+    console.error(`❌ [API Error ${status}]:`, errorMessage);
+    
+    return Promise.reject(errorMessage);
   }
 );

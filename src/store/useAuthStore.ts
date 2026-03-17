@@ -23,8 +23,14 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       accessToken: null,
       isAuthenticated: false,
-      setAuth: (user, token) => 
-        set({ user, accessToken: token, isAuthenticated: true }),
+     setAuth: (user, token) => {
+  console.log("🔐 [Store] Setting Access Token in Memory:", token.substring(0, 10) + "...");
+  set({ 
+    user, 
+    accessToken: token, // This matches the 'accessToken' used in api-client
+    isAuthenticated: true 
+  });
+},
       setAccessToken: (token) => 
         set({ accessToken: token }),
       logout: () => {

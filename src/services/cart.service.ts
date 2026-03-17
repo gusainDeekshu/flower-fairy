@@ -1,23 +1,27 @@
-export interface AddToCartInput {
-  productId: string;
-  variantId?: string;
-  quantity: number;
-}
+// src/services/cart.service.ts
+import { apiClient } from '@/lib/api-client';
 
-export const CartApi = {
-  async addToCart(input: AddToCartInput) {
-    const res = await fetch("/api/cart", {
-      method: "POST",
-      body: JSON.stringify(input),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!res.ok) {
-      throw new Error("Cart update failed");
-    }
-
-    return res.json();
+export const cartService = {
+  getCart: async () => {
+    const { data } = await apiClient.get('/cart');
+    return data;
   },
+
+  addToCart: async (productId: string, quantity: number) => {
+    const { data } = await apiClient.post('/cart/add', { productId, quantity });
+    return data;
+  },
+
+  removeItem: async (productId: string) => {
+    await apiClient.delete(`/cart/remove/${productId}`);
+  },
+
+  updateQuantity: async (productId: string, quantity: number) => {
+    // Requires the PATCH endpoint in NestJS
+    await apiClient.patch('/cart/update', { productId, quantity });
+  },
+
+  clearCart: async () => {
+    await apiClient.delete('/cart/clear');
+  }
 };

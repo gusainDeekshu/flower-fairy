@@ -1,44 +1,35 @@
-'use client';
+// src/components/providers/AuthProvider.tsx
+"use client";
+import { useEffect } from "react";
+import { useAuthStore } from "@/store/useAuthStore";
+import { apiClient } from "@/lib/api-client";
 
-import { useEffect, useState } from 'react';
-import { useAuthStore } from '@/store/useAuthStore';
-import { apiClient } from '@/lib/api-client';
-
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, setAuth, logout } = useAuthStore();
-  const [isHydrating, setIsHydrating] = useState(true);
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated, accessToken, setAccessToken, logout } = useAuthStore();
 
   useEffect(() => {
-    const initAuth = async () => {
-      try {
-        // Since your api-client.ts interceptor returns 'response.data',
-        // 'response' here IS the object returned by NestJS: { user: { id, ... } }
-        const response: any = await apiClient.get('/auth/me');
-        
-        // Use the user object from the response
-        if (response && response.user) {
-          // The interceptor handles setAccessToken automatically during 401,
-          // so we grab the current token from the store to update the Auth state.
-          const currentToken = useAuthStore.getState().accessToken || '';
-          setAuth(response.user, currentToken);
-        }
-      } catch (err) {
-        // If hydration fails (no cookie/invalid session), clear state
-        if (isAuthenticated) {
+    const syncSession = async () => {
+      // If the store says we are logged in but the token is missing from RAM
+      if (isAuthenticated && !accessToken) {
+        try {
+          console.log("🔄 [Auth] Token missing from memory. Fetching fresh token...");
+          // This call sends the HttpOnly cookie automatically
+          const response = await apiClient.post("/auth/refresh");
+          
+          // Use the flattened data from your interceptor
+          if (response && (response as any).access_token) {
+             setAccessToken((response as any).access_token);
+             console.log("✅ [Auth] In-memory accessToken restored.");
+          }
+        } catch (error) {
+          console.error("❌ [Auth] Session restoration failed:", error);
           logout();
         }
-      } finally {
-        setIsHydrating(false);
       }
     };
 
-    initAuth();
-  }, []);
-
-  // Prevent UI flickering while checking the session
-  if (isHydrating) {
-    return null; 
-  }
+    syncSession();
+  }, [isAuthenticated, accessToken, setAccessToken, logout]);
 
   return <>{children}</>;
-}
+};
