@@ -1,65 +1,85 @@
 // src/lib/api-client.ts
 import { useAuthStore } from '@/store/useAuthStore';
-import axios, { AxiosInstance, AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 
 // --- Types ---
 interface RefreshResponse {
   access_token: string;
 }
 
-// --- Queue Management for Concurrent Refresh Calls ---
+// --- Queue Management ---
 let isRefreshing = false;
-let failedQueue: any[] = [];
+let failedQueue: {
+  resolve: (token: string) => void;
+  reject: (error: any) => void;
+}[] = [];
 
 const processQueue = (error: any, token: string | null = null) => {
   failedQueue.forEach((prom) => {
     if (error) prom.reject(error);
-    else prom.resolve(token);
+    else if (token) prom.resolve(token);
   });
   failedQueue = [];
 };
 
-// --- Instance Creation ---
+// --- Helper: Normalize Errors (🔥 FIXES YOUR CRASH) ---
+const getErrorMessage = (error: any): string => {
+  if (!error) return "Unknown error";
+
+  if (typeof error === "string") return error;
+
+  if (error.response?.data?.message)
+    return error.response.data.message;
+
+  if (error.message)
+    return error.message;
+
+  return "Something went wrong";
+};
+
+// --- Axios Instance ---
 export const apiClient: AxiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1',
   timeout: 10000,
-  withCredentials: true, // Crucial for HttpOnly Cookies
+  withCredentials: true, // ✅ required for cookies
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// --- Request Interceptor ---
+// --- REQUEST INTERCEPTOR ---
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = useAuthStore.getState().accessToken;
 
-    // DEBUG LOG: Frontend Request Sending
-    console.log(`🚀 [API Request] ${config.method?.toUpperCase()} ${config.url}`);
-    console.log(`🔑 [API Token Status] ${token ? 'Token Attached' : 'No Token Found'}`);
+    console.log(`🚀 ${config.method?.toUpperCase()} ${config.url}`);
+    console.log(`🔑 Token: ${token ? 'YES' : 'NO'}`);
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(getErrorMessage(error))
 );
 
-// --- Response Interceptor ---
+// --- RESPONSE INTERCEPTOR ---
 apiClient.interceptors.response.use(
   (response) => {
-    console.log(`✅ [API Success] ${response.status} from ${response.config.url}`);
-    return response.data; // Flattens the response so you don't need .data in services
+    console.log(`✅ ${response.status} ${response.config.url}`);
+    return response.data; // ✅ always return clean data
   },
+
   async (error) => {
-    const originalRequest = error.config;
+    const originalRequest = error.config as any;
     const status = error.response?.status;
 
-    // --- TOKEN ROTATION LOGIC ---
-    if (status === 401 && !originalRequest._retry) {
-      
-      // If a refresh is already in progress, add this request to the queue
+    console.error(`❌ API Error [${status}]:`, getErrorMessage(error));
+
+    // --- TOKEN REFRESH LOGIC ---
+    if (status === 401 && !originalRequest?._retry) {
+
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -68,48 +88,47 @@ apiClient.interceptors.response.use(
             originalRequest.headers.Authorization = `Bearer ${token}`;
             return apiClient(originalRequest);
           })
-          .catch((err) => Promise.reject(err));
+          .catch((err) => Promise.reject(getErrorMessage(err)));
       }
 
       originalRequest._retry = true;
       isRefreshing = true;
 
       try {
-        console.log("🔄 [Auth] Access token expired. Attempting silent refresh...");
+        console.log("🔄 [Auth] Refreshing access token...");
 
-        // Call standard axios directly to avoid interceptor recursion
-        const refreshResponse = await axios.post<RefreshResponse>(
+        const res = await axios.post<RefreshResponse>(
           `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
           {},
           { withCredentials: true }
         );
 
-        const newAccessToken = refreshResponse.data.access_token;
+        const newToken = res.data.access_token;
 
-        // Update Zustand Store (In-memory)
-        useAuthStore.getState().setAccessToken(newAccessToken);
-        
-        // Process the queue with the new token
-        processQueue(null, newAccessToken);
-        
-        // Update current request and retry
-        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        // ✅ Update Zustand store
+        useAuthStore.getState().setAccessToken(newToken);
+
+        // ✅ Resolve queued requests
+        processQueue(null, newToken);
+
+        // ✅ Retry original request
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return apiClient(originalRequest);
-        
+
       } catch (refreshError) {
-        console.error("❌ [Auth] Refresh failed. Session invalid.");
+        console.warn("⚠️ [Auth] Refresh failed");
+
         processQueue(refreshError, null);
-        useAuthStore.getState().logout();
-        return Promise.reject("Session expired. Please login again.");
+
+        // ❌ DO NOT force logout here (let UI decide)
+        return Promise.reject(getErrorMessage(refreshError));
+
       } finally {
         isRefreshing = false;
       }
     }
 
-    // --- GLOBAL ERROR HANDLING ---
-    const errorMessage = error.response?.data?.message || error.message || "An unexpected error occurred";
-    console.error(`❌ [API Error ${status}]:`, errorMessage);
-    
-    return Promise.reject(errorMessage);
+    // --- NORMAL ERROR ---
+    return Promise.reject(getErrorMessage(error)); // 🔥 ALWAYS STRING
   }
 );

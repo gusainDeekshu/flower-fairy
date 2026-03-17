@@ -1,35 +1,39 @@
-// src/components/providers/AuthProvider.tsx
 "use client";
+
 import { useEffect } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { apiClient } from "@/lib/api-client";
+import { User, RefreshResponse } from "@/types/auth";
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated, accessToken, setAccessToken, logout } = useAuthStore();
+  const { setAuth, setAccessToken, setGuest } = useAuthStore();
 
   useEffect(() => {
-    const syncSession = async () => {
-      // If the store says we are logged in but the token is missing from RAM
-      if (isAuthenticated && !accessToken) {
-        try {
-          console.log("🔄 [Auth] Token missing from memory. Fetching fresh token...");
-          // This call sends the HttpOnly cookie automatically
-          const response = await apiClient.post("/auth/refresh");
-          
-          // Use the flattened data from your interceptor
-          if (response && (response as any).access_token) {
-             setAccessToken((response as any).access_token);
-             console.log("✅ [Auth] In-memory accessToken restored.");
-          }
-        } catch (error) {
-          console.error("❌ [Auth] Session restoration failed:", error);
-          logout();
+    const initAuth = async () => {
+      try {
+        console.log("🔍 [Auth] Checking session...");
+
+        // ✅ IMPORTANT: no AxiosResponse type here
+        const user = (await apiClient.get("/auth/me")) as User;
+
+        setAuth(user, "");
+
+        // ✅ Refresh AFTER user
+        const refreshRes = (await apiClient.post("/auth/refresh")) as RefreshResponse;
+
+        if (refreshRes?.access_token) {
+          setAccessToken(refreshRes.access_token);
+          console.log("🔐 [Auth] Token restored");
         }
+
+      } catch (error) {
+        console.log("👤 Guest mode");
+        setGuest();
       }
     };
 
-    syncSession();
-  }, [isAuthenticated, accessToken, setAccessToken, logout]);
+    initAuth();
+  }, [setAuth, setAccessToken, setGuest]);
 
   return <>{children}</>;
 };
