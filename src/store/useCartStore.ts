@@ -1,4 +1,3 @@
-// src/store/useCartStore.ts
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { cartService } from "@/services/cart.service";
@@ -10,12 +9,14 @@ export const useCartStore = create<any>()(
       items: [],
       isLoading: false,
 
+      // Fetches the cart from the backend and flattens the Prisma structure
       fetchCart: async () => {
         const { user } = useAuthStore.getState();
         if (!user) return;
         set({ isLoading: true });
         try {
           const res = await cartService.getCart();
+          // Normalize Prisma nested product structure
           const normalized = (res?.items || []).map((item: any) => ({
             productId: item.productId,
             name: item.product.name,
@@ -27,17 +28,17 @@ export const useCartStore = create<any>()(
         } catch (error) {
           console.error("fetchCart failed", error);
         } finally {
-          set({ isLoading: false });
+          set({ isLoading: true });
         }
       },
 
+      // Pushes local guest items to the database after login
       syncCart: async () => {
         const { items } = get();
         const { user } = useAuthStore.getState();
         if (!user || items.length === 0) return;
         
         try {
-          // Push local guest items to the database
           for (const item of items) {
             await cartService.addToCart(item.productId, item.quantity);
           }
@@ -45,7 +46,7 @@ export const useCartStore = create<any>()(
         } catch (err) {
           console.error("❌ [CartStore] Sync failed:", err);
         }
-      }, // Ensure this comma exists
+      },
 
       addItem: async (newItem: any) => {
         const { user } = useAuthStore.getState();
@@ -69,7 +70,41 @@ export const useCartStore = create<any>()(
         }
       },
 
-      clearCart: () => set({ items: [] }),
+      removeItem: async (productId: string) => {
+        const { user } = useAuthStore.getState();
+        if (user) {
+          try {
+            await cartService.removeItem(productId);
+            await get().fetchCart();
+          } catch (err) {
+            console.error("Remove failed", err);
+          }
+        } else {
+          set({ items: get().items.filter((i: any) => i.productId !== productId) });
+        }
+      },
+
+      updateQuantity: async (productId: string, quantity: number) => {
+        const { user } = useAuthStore.getState();
+        if (user) {
+          try {
+            await cartService.updateQuantity(productId, quantity);
+            await get().fetchCart();
+          } catch (err) {
+            console.error("Update failed", err);
+          }
+        } else {
+          set({ items: get().items.map((i: any) => 
+            i.productId === productId ? { ...i, quantity } : i
+          )});
+        }
+      },
+
+      clearCart: async () => {
+        const { user } = useAuthStore.getState();
+        if (user) await cartService.clearCart();
+        set({ items: [] });
+      },
     }),
     { 
       name: "flower-fairy-cart",

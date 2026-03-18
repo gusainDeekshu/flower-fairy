@@ -1,39 +1,48 @@
+// src/components/providers/AuthProvider.tsx
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { apiClient } from "@/lib/api-client";
-import { User, RefreshResponse } from "@/types/auth";
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const { setAuth, setAccessToken, setGuest } = useAuthStore();
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const { setAuth, logout } = useAuthStore();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+
     const initAuth = async () => {
       try {
-        console.log("🔍 [Auth] Checking session...");
+        const { data } = await apiClient.get("/auth/me");
 
-        // ✅ IMPORTANT: no AxiosResponse type here
-        const user = (await apiClient.get("/auth/me")) as User;
+        if (!isMounted) return;
 
-        setAuth(user, "");
+        setAuth(data.user, data.access_token);
+      } catch (err) {
+        if (!isMounted) return;
 
-        // ✅ Refresh AFTER user
-        const refreshRes = (await apiClient.post("/auth/refresh")) as RefreshResponse;
-
-        if (refreshRes?.access_token) {
-          setAccessToken(refreshRes.access_token);
-          console.log("🔐 [Auth] Token restored");
-        }
-
-      } catch (error) {
-        console.log("👤 Guest mode");
-        setGuest();
+        console.log("No session found");
+        logout();
+      } finally {
+        if (isMounted) setLoading(false);
       }
     };
 
     initAuth();
-  }, [setAuth, setAccessToken, setGuest]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        Checking session...
+      </div>
+    );
+  }
 
   return <>{children}</>;
-};
+}
