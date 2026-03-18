@@ -10,12 +10,12 @@ interface User {
 }
 
 interface AuthState {
-  user: User | null;
+  user: User | null; // Allow null here
   accessToken: string | null;
   isAuthenticated: boolean;
   isGuest: boolean;
 
-  setAuth: (user: User, token: string) => void;
+  setAuth: (user: User | null, token: string | null) => void;
   setAccessToken: (token: string) => void;
   setGuest: () => void;
   logout: () => void;

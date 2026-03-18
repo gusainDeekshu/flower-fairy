@@ -4,20 +4,22 @@ import { apiClient } from '@/lib/api-client';
 
 export function useProducts(categorySlug?: string) {
   return useQuery({
-    // Keep keys consistent with your console error: ["products", "store", slug]
     queryKey: ['products', 'flower-fairy-dehradun', categorySlug || null],
     queryFn: async () => {
-      // apiClient already returns response.data due to your interceptor
-      const data: any = await apiClient.get('/products/catalog/flower-fairy-dehradun');
+      // 1. Fetch data using your existing apiClient
+      const response: any = await apiClient.get('/products/catalog/flower-fairy-dehradun');
       
-      // Ensure we always return an array, never undefined
-      const products = data?.products || data || []; 
+      // 2. Extract the actual array. 
+      // Based on your previous logs, NestJS often returns { products: [...] }
+      const data = response?.data || response;
+      const productList = Array.isArray(data?.products) ? data.products : (Array.isArray(data) ? data : []); 
 
-      if (categorySlug && Array.isArray(products)) {
-        return products.filter((p: any) => p.category?.slug === categorySlug);
+      // 3. Filter by category if a slug was provided
+      if (categorySlug && productList.length > 0) {
+        return productList.filter((p: any) => p.category?.slug === categorySlug);
       }
       
-      return products;
+      return productList;
     },
     staleTime: 1000 * 60 * 10,
   });

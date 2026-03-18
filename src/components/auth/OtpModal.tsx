@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useCartStore } from "@/store/useCartStore";
-import { apiClient } from "@/lib/api-client"; // Import your provided client
+import { apiClient } from "@/lib/api-client";
 import { X, Loader2, Smartphone, Mail, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -21,11 +21,13 @@ export function OtpModal({
   const [step, setStep] = useState(1);
   const [identifier, setIdentifier] = useState("");
   const [otp, setOtp] = useState("");
-
+  
+  // Hooks for state management
+  const { syncCart } = useCartStore();
   const setAuth = useAuthStore((s) => s.setAuth);
   const cartItems = useCartStore((s) => s.items);
 
-  // Mutation to Send OTP using apiClient
+  // Mutation to Send OTP
   const sendOtpMutation = useMutation({
     mutationFn: (id: string) =>
       apiClient.post("/auth/send-otp", {
@@ -36,42 +38,48 @@ export function OtpModal({
       setStep(2);
       toast.success("OTP sent successfully!");
     },
-    onError: (error: string) => {
-      toast.error(error); // Shows "Invalid or expired OTP" or "AccessDenied"
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || "Failed to send OTP");
     },
   });
 
-  // Mutation to Verify OTP using apiClient
-  // src/components/auth/OtpModal.tsx
+  // Mutation to Verify OTP and Sync Cart
+  const verifyOtpMutation = useMutation({
+    mutationFn: (otpCode: string) =>
+      apiClient.post("/auth/verify-otp", {
+        identifier,
+        otp: otpCode,
+        // Optional: Sending items here if your backend handles merge during verify
+        cartItems, 
+      }),
+    onSuccess: async (response: any) => {
+      // Axios typically wraps the response in a 'data' property
+      const data = response?.data || response;
 
-const verifyOtpMutation = useMutation({
-  mutationFn: (otpCode: string) => 
-    apiClient.post('/auth/verify-otp', { 
-      identifier, 
-      otp: otpCode, 
-      cartItems 
-    }),
-  onSuccess: (data: any) => {
-    // LOG: Verify what data looks like here
-    console.log("📦 [OtpModal] Received Data:", data);
+      if (data?.access_token) {
+        // 1. Set authentication state
+        setAuth(data.user, data.access_token);
+        toast.success("Welcome back!");
 
-    if (data?.access_token) {
-      // Ensure key matches: backend returns 'access_token', store uses 'accessToken'
-      setAuth(data.user, data.access_token); 
-      
-      toast.success('Welcome back!');
-      
-      // Delay closing/onSuccess slightly to ensure Zustand state propagates
-      setTimeout(() => {
-        onSuccess();
-        onClose();
-      }, 100);
-    }
-  },
-  onError: (error: any) => {
-    toast.error(error?.message || "Verification failed");
-  }
-});
+        try {
+          // 2. Sync local guest items to the backend database
+          // This ensures items aren't lost during the transition from guest to user
+          await syncCart();
+        } catch (syncError) {
+          console.error("Cart sync failed after login:", syncError);
+        }
+
+        // 3. Finalize the login process
+        setTimeout(() => {
+          onSuccess();
+          onClose();
+        }, 100);
+      }
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || "Verification failed");
+    },
+  });
 
   if (!isOpen) return null;
 
