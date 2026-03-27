@@ -1,5 +1,3 @@
-// src/lib/api-client.ts
-
 import { useAuthStore } from "@/store/useAuthStore";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
@@ -16,6 +14,7 @@ declare module "axios" {
     patch<T = any, R = T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<R>;
   }
 }
+
 // 1. Create the instance
 export const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1",
@@ -49,9 +48,16 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // 🔥 FIX: Check if this is an authentication route
+    // We do NOT want to trigger a silent refresh if an OTP simply failed verification.
+    const isAuthRoute = originalRequest.url?.includes('/auth/verify-otp') || 
+                        originalRequest.url?.includes('/auth/refresh') ||
+                        originalRequest.url?.includes('/auth/me');
+
     // 401 means Access Token expired. We try to refresh using the HTTP-Only cookie.
     // We check !originalRequest._retry to prevent infinite loops if refresh also fails.
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // 🔥 Added `&& !isAuthRoute` to prevent the interceptor loop
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthRoute) {
       originalRequest._retry = true;
 
       try {
