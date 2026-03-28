@@ -1,106 +1,97 @@
-import { Metadata } from 'next';
-import dynamic from 'next/dynamic';
-import ProductGallery from './ProductGallery';
-import ProductInfoBox from './ProductInfoBox';
+import { Suspense } from 'react';
+import { notFound } from 'next/navigation';
+import { AxiosError } from 'axios';
+
+// API Service
 import { ProductApi } from '@/services/product.service';
 
-// Dynamically import heavy components for better page load speed
-const ProductDetailsTable = dynamic(() => import('./ProductDetailsTable'));
-const APlusContent = dynamic(() => import('./APlusContent'));
-const SimilarProducts = dynamic(() => import('./SimilarProducts')); // Added this
-const StickyAddToCart = dynamic(() => import('./StickyAddToCart'));
+// Components
+import ProductGallery from '@/components/product/ProductGallery';
+import ProductInfo from '@/components/product/ProductInfo';
+import ImportantInfo from '@/components/product/ImportantInfo';
+import ProductDescription from '@/components/product/ProductDescription';
+import APlusContent from '@/components/product/APlusContent';
+import ProductDetails from '@/components/product/ProductDetails';
+import SimilarProducts from '@/components/product/SimilarProducts';
+import StickyAddToCart from '@/components/product/StickyAddToCart';
 
-type Props = {
-  params: Promise<{ slug: string }>;
-};
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export default async function ProductPage({ 
+  params 
+}: { 
+  params: Promise<{ slug: string }> 
+}) {
+  // 1. Await the params (Next.js 15+ requirement)
   const resolvedParams = await params;
-  const product = await ProductApi.getProductBySlug(resolvedParams.slug);
-  
-  // Use the first image from the images array for the OpenGraph/SEO image
-  const ogImage = product.images && product.images.length > 0 ? product.images[0] : undefined;
+  const { slug } = resolvedParams;
 
-  return {
-    title: `${product.name} | AE Naturals`,
-    description: product.description?.substring(0, 160) || '',
-    openGraph: ogImage ? { images: [ogImage] } : undefined
-  };
-}
+  let product = null;
 
-export default async function ProductPage({ params }: Props) {
-  const resolvedParams = await params;
-  const product = await ProductApi.getProductBySlug(resolvedParams.slug);
-console.log("🚀 Fetched product:", product);
-  // Fetch similar products based on the product's category slug
-  // This matches your backend: productsService.getSimilarProducts(categorySlug)
-  const similarProducts = product.category?.slug 
-    ? await ProductApi.getSimilarProducts(product.category.slug)
-    : [];
-
-  // Structure SEO Schema
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
-    name: product.name,
-    image: product.images?.[0] || '', // Use first image
-    description: product.description,
-    brand: { '@type': 'Brand', name: product.extra?.manufacturer || 'AE Naturals' },
-    offers: {
-      '@type': 'Offer',
-      price: product.price,
-      priceCurrency: 'INR',
-      availability: 'https://schema.org/InStock',
+  // 2. Fetch the product using your new ProductApi service
+  try {
+    product = await ProductApi.getProductBySlug(slug);
+  } catch (error) {
+    // 3. Gracefully handle 404 Not Found errors thrown by Axios/NestJS
+    if (error instanceof AxiosError && error.response?.status === 404) {
+      product = null; // Will trigger notFound() below
+    } else {
+      console.error(`🚨 Error fetching product [${slug}]:`, error);
+      product = null;
     }
-  };
+  }
 
+  // 4. If product doesn't exist or API fails with 404, show not-found.tsx
+  if (!product) {
+    notFound();
+  }
+
+  // 5. Render the Amazon-style layout in strict order
   return (
-    <>
-      <script 
-        type="application/ld+json" 
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} 
-      />
-      
-      <main className="max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-12 space-y-16">
+    <div className="min-h-screen bg-white pb-24 md:pb-8 relative">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
         
-        {/* 1. HERO: GALLERY & INFO BOX */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-          {/* Passed 'images' array instead of single 'image' to match your Prisma schema */}
-          <ProductGallery images={product.images || []} variants={product.variants || []} />
-          <ProductInfoBox product={product} />
-        </div>
+        {/* 1. HERO SECTION */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+  <div className="lg:col-span-5">
+    <ProductGallery images={product.images || []} name={product.name} />
+  </div>
 
-        <hr className="border-zinc-200" />
+  <div className="lg:col-span-7">
+    <ProductInfo product={product as any} />
+  </div>
+</div>
 
-        {/* 2. TECHNICAL SPECS & IMPORTANT INFO */}
+        <hr className="border-gray-200" />
+
+        {/* 2. SIMILAR PRODUCTS */}
+        <Suspense fallback={<div className="h-64 bg-gray-50 animate-pulse rounded-lg w-full max-w-7xl mx-auto" />}>
+          {/* Assuming SimilarProducts internally fetches using ProductApi.getSimilarProducts */}
+          <SimilarProducts category={product.category} productId={product.id} />
+        </Suspense>
+
+        <hr className="border-gray-200" />
+
+        {/* 3. IMPORTANT INFORMATION */}
         {product.extra && (
-          <section>
-            <ProductDetailsTable productData={product} extra={product.extra} />
-          </section>
+          <ImportantInfo extra={product.extra} />
         )}
 
-        {/* 3. A+ RICH CONTENT (From your modular builder) */}
+        {/* 4. PRODUCT DESCRIPTION */}
+        {product.description && (
+          <ProductDescription description={product.description} />
+        )}
+
+        {/* 5. A+ CONTENT */}
         {product.extra?.aPlusContent && product.extra.aPlusContent.length > 0 && (
-          <section>
-            <APlusContent blocks={product.extra.aPlusContent} />
-          </section>
+          <APlusContent blocks={product.extra.aPlusContent} />
         )}
 
-        {/* 4. SIMILAR PRODUCTS (Cross-selling) */}
-        {similarProducts && similarProducts.length > 0 && (
-          <section className="pt-8 border-t border-zinc-100">
-            <h2 className="text-2xl font-black text-zinc-900 uppercase tracking-tight mb-8">
-              Similar Products You May Like
-            </h2>
-            {/* Filter out the current product from the similar products list */}
-            <SimilarProducts products={similarProducts.filter((p: any) => p.id !== product.id)} />
-          </section>
-        )}
+        {/* 6. PRODUCT DETAILS TABLE */}
+        <ProductDetails product={product as any} />
 
-        {/* 5. STICKY MOBILE ADD-TO-CART */}
-        <StickyAddToCart product={product} />
-        
       </main>
-    </>
+
+      {/* MOBILE STICKY ADD TO CART */}
+      <StickyAddToCart product={product as any} />
+    </div>
   );
 }
