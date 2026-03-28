@@ -1,31 +1,43 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { CartApi, AddToCartInput } from "@/services/cart.service";
+//src\hooks\useAddToCart.ts
+import apiClient from "@/lib/api-client";
+import {
+  CartResponse,
+  AddToCartPayload,
+} from "@/types/cart";
 
-export function useAddToCart() {
-  const queryClient = useQueryClient();
+export const CartApi = {
+  getCart: async (): Promise<CartResponse> => {
+    const { data } = await apiClient.get("/cart");
+    return data;
+  },
 
-  return useMutation({
-    mutationFn: (data: AddToCartInput) => CartApi.addToCart(data),
+  addToCart: async (
+    payload: AddToCartPayload
+  ): Promise<CartResponse> => {
+    const { data } = await apiClient.post("/cart/add", payload);
+    return data;
+  },
 
-    onMutate: async (newItem) => {
-      await queryClient.cancelQueries({ queryKey: ["cart"] });
+  updateQuantity: async (
+    payload: AddToCartPayload
+  ): Promise<CartResponse> => {
+    const { data } = await apiClient.patch(
+      "/cart/update",
+      payload
+    );
+    return data;
+  },
 
-      const previousCart = queryClient.getQueryData(["cart"]);
+  removeItem: async (
+    productId: string
+  ): Promise<CartResponse> => {
+    const { data } = await apiClient.delete(
+      `/cart/remove/${productId}`
+    );
+    return data;
+  },
 
-      queryClient.setQueryData(["cart"], (old: any = []) => [
-        ...old,
-        newItem,
-      ]);
-
-      return { previousCart };
-    },
-
-    onError: (_err, _newItem, context) => {
-      queryClient.setQueryData(["cart"], context?.previousCart);
-    },
-
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["cart"] });
-    },
-  });
-}
+  clearCart: async (): Promise<void> => {
+    await apiClient.delete("/cart/clear");
+  },
+};

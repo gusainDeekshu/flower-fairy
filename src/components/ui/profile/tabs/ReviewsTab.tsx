@@ -18,7 +18,7 @@ export function ReviewsTab() {
   const fetchReviews = useCallback(async () => {
     try {
       const res = await apiClient.get<Review[]>('/api/v1/reviews/my');
-      setReviews(res.data);
+      setReviews(res || []);
     } catch (error) {
       toast.error('Failed to load reviews');
     } finally {
@@ -33,7 +33,7 @@ export function ReviewsTab() {
   const deleteReview = async (id: string) => {
     setDeletingId(id);
     try {
-      await api.delete(`/api/v1/reviews/${id}`);
+      await apiClient.delete(`/api/v1/reviews/${id}`);
       toast.success('Review deleted successfully');
       fetchReviews();
     } catch (e) {

@@ -4,12 +4,24 @@ import { persist } from "zustand/middleware";
 import { cartService } from "@/services/cart.service";
 import { useAuthStore } from "./useAuthStore";
 
+// 🔥 1. ADD THIS INTERFACE AND EXPORT IT
+export interface CartItem {
+  productId: string;
+  variantId?: string;
+  name: string;
+  price: number;
+  image: string;
+  quantity: number;
+  storeId?: string;
+}
+
+// 🔥 2. Update CartState to use CartItem[] instead of any[]
 interface CartState {
-  items: any[];
+  items: CartItem[]; 
   isLoading: boolean;
   fetchCart: () => Promise<void>;
   syncCart: () => Promise<void>;
-  addItem: (item: any) => Promise<void>;
+  addItem: (item: CartItem) => Promise<void>;
   removeItem: (productId: string) => Promise<void>;
   updateQuantity: (productId: string, quantity: number) => Promise<void>;
   clearCart: () => Promise<void>;

@@ -8,7 +8,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { Check, X, Edit2, Loader2 } from "lucide-react";
 
 export function ProfileTab() {
-  const { user: persistedUser, token, setAuth } = useAuthStore();
+  const { user: persistedUser, isAuthenticated, setAuth } = useAuthStore();
   const [user, setUser] = useState<any>(persistedUser || null);
   const [loading, setLoading] = useState(!persistedUser);
 
@@ -29,7 +29,6 @@ export function ProfileTab() {
         headers: {
           "X-User-Id": persistedUser?.id || "",
           "X-User-Email": persistedUser?.email || "",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
       });
       // The auth/me endpoint returns { user, access_token }
@@ -39,7 +38,7 @@ export function ProfileTab() {
     } finally {
       setLoading(false);
     }
-  }, [persistedUser, token]);
+  }, [persistedUser, isAuthenticated]);
 
   useEffect(() => {
     fetchProfile();
@@ -68,7 +67,7 @@ export function ProfileTab() {
         headers: {
           "X-User-Id": persistedUser?.id || "",
           "X-User-Email": persistedUser?.email || "",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          // ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
       });
 
@@ -80,7 +79,7 @@ export function ProfileTab() {
           ...data,
           name: res.data.name || persistedUser?.name,
         },
-        token || "",
+        String(isAuthenticated),
       );
       toast.success("Profile updated successfully!");
       handleCancel();
@@ -347,7 +346,7 @@ export function ProfileTab() {
                   {(otpStep === "sent" || otpStep === "verifying") && (
                     <p className="text-xs text-green-600 font-semibold flex items-center gap-1.5 animate-in fade-in">
                       <Check size={14} /> OTP sent to your new{" "}
-                      {field.toLowerCase()}
+                      {field?.toLowerCase() || "field"}
                     </p>
                   )}
                 </div>

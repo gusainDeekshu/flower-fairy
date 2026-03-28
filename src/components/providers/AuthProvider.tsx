@@ -16,9 +16,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const res = await apiClient.get<any, AuthResponse>("/auth/me");
         
-        if (res && res.access_token) {
+        if (res && res.access_token && res.user && res.user.name) {
           // 1. Restore Auth State
-          setAuth(res.user, res.access_token);
+          setAuth(res.user as any, res.access_token);
           
           // 2. 🔥 FETCH CART NOW: Now that we have a token, grab the user's cart
           await fetchCart(); 

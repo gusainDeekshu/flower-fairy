@@ -16,7 +16,7 @@ export function OrdersTab() {
   const fetchOrders = useCallback(async () => {
     try {
       const res = await apiClient.get<Order[]>('/api/v1/orders/my-orders');
-      setOrders(res.data);
+      setOrders(res || []);
     } catch (error) {
       // Handle 404 gracefully for no orders
       setOrders([]);

@@ -20,8 +20,8 @@ export function WishlistTab() {
 
   const fetchWishlist = useCallback(async () => {
     try {
-      const res = await apiClient.get<WishlistItem[]>('/api/v1/wishlist');
-      setItems(res.data);
+     const res = await apiClient.get<WishlistItem[]>('/api/v1/wishlist');
+setItems(res || []);
     } catch (error) {
       toast.error('Failed to load wishlist');
     } finally {
@@ -37,7 +37,7 @@ export function WishlistTab() {
     setProcessingId(productId);
     try {
       // Toggle logic handles removal when passing existing productId
-      await api.post(`/api/v1/wishlist/${productId}`);
+      await apiClient.post(`/api/v1/wishlist/${productId}`);
       toast.success('Removed from wishlist');
       fetchWishlist();
     } catch (error) {
@@ -50,14 +50,14 @@ export function WishlistTab() {
     setProcessingId(item.product.id);
     try {
       addItem({ 
-        id: item.product.id, 
+        productId: item.product.id, 
         name: item.product.name, 
         price: item.product.price, 
         image: item.product.images[0], 
         quantity: 1 
       });
       // Remove from wishlist after moving to cart
-      await api.post(`/api/v1/wishlist/${item.product.id}`);
+      await apiClient.post(`/api/v1/wishlist/${item.product.id}`);
       toast.success('Moved to cart!');
       fetchWishlist();
     } catch (error) {

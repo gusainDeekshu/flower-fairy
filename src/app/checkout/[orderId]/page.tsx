@@ -1,7 +1,7 @@
 // src/app/checkout/[orderId]/page.tsx
 "use client";
-import { useEffect, useState } from "react";
 import { paymentService } from "@/services/payment.service";
+import { useEffect, useState } from "react";
 
 export default function CheckoutProcess({ params }: { params: { orderId: string } }) {
   const [loading, setLoading] = useState(true);
@@ -10,7 +10,7 @@ export default function CheckoutProcess({ params }: { params: { orderId: string 
     const initiatePayment = async () => {
       try {
         // Call backend to get payment session (e.g., Stripe Checkout URL)
-        const response = await paymentService.initiateCheckout(params.orderId, 'STRIPE');
+        const response = await paymentService.initiatePayment(params.orderId, 'STRIPE');
         
         if (response.url) {
           window.location.href = response.url; // Redirect to payment gateway

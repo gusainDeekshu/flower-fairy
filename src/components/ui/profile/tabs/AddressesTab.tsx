@@ -23,8 +23,8 @@ export function AddressesTab() {
 
   const fetchAddresses = useCallback(async () => {
     try {
-      const res = await api.get<Address[]>('/api/v1/addresses');
-      setAddresses(res.data);
+      const res = await apiClient.get<Address[]>('/api/v1/addresses');
+      setAddresses(res || []);
     } catch (error) {
       toast.error('Failed to load addresses');
     } finally {
@@ -72,7 +72,7 @@ export function AddressesTab() {
   const deleteAddress = async (id: string) => {
     setDeletingId(id);
     try {
-      await api.delete(`/api/v1/addresses/${id}`);
+      await apiClient.delete(`/api/v1/addresses/${id}`);
       toast.success('Address removed');
       fetchAddresses();
     } catch (error) {
