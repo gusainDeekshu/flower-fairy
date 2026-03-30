@@ -71,7 +71,7 @@ export default function ProductInfo({ product }: { product: any }) {
                 key={v.id} 
                 className="border border-gray-300 rounded-lg px-4 py-2 text-sm font-medium hover:border-orange-500 hover:bg-orange-50 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
               >
-                {v.value}
+                {v.name}
               </button>
             ))}
           </div>

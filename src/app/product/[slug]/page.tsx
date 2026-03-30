@@ -10,7 +10,7 @@ import ProductGallery from '@/components/product/ProductGallery';
 import ProductInfo from '@/components/product/ProductInfo';
 import ImportantInfo from '@/components/product/ImportantInfo';
 import ProductDescription from '@/components/product/ProductDescription';
-import APlusContent from '@/components/product/APlusContent';
+import APlusRenderer from '@/components/product/aplus/APlusRenderer';
 import ProductDetails from '@/components/product/ProductDetails';
 import SimilarProducts from '@/components/product/SimilarProducts';
 import StickyAddToCart from '@/components/product/StickyAddToCart';
@@ -82,7 +82,7 @@ export default async function ProductPage({
 
         {/* 5. A+ CONTENT */}
         {product.extra?.aPlusContent && product.extra.aPlusContent.length > 0 && (
-          <APlusContent blocks={product.extra.aPlusContent} />
+          <APlusRenderer blocks={product.extra.aPlusContent} />
         )}
 
         {/* 6. PRODUCT DETAILS TABLE */}

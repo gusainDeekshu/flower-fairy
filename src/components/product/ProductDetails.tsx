@@ -2,6 +2,7 @@
 export default function ProductDetails({ product }: { product: any }) {
   // 🔥 FIX: Safely extract the category string
   const categoryName = product.category?.name || product.category;
+  console.log("Extracted detailsList name:", product );
 
   const detailsList = [
     { label: 'Manufacturer', value: product.extra?.manufacturer },
@@ -10,14 +11,18 @@ export default function ProductDetails({ product }: { product: any }) {
     // 🔥 FIX: Use the extracted string instead of the raw object
     { label: 'Category', value: categoryName }, 
   ].filter(item => item.value); 
+  
 
-  Object.entries(product.attributes || {}).forEach(([key, value]) => {
-    if (key.toLowerCase() !== 'weight') { 
-      const safeValue = typeof value === 'object' && value !== null 
-          ? (value as any).name || JSON.stringify(value) 
-          : String(value);
-      detailsList.push({ label: key, value: safeValue });
-    }
+   // ✅ FIX: Directly iterate array
+  (product.attributes || []).forEach((attr: any) => {
+    if (!attr?.name || !attr?.value) return; // safety check
+
+    console.log(`Processing attribute - Name: ${attr.name}, Value: ${attr.value}`);
+
+    detailsList.push({
+      label: attr.name,
+      value: String(attr.value),
+    });
   });
 
   if (detailsList.length === 0) return null;
