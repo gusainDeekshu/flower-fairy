@@ -1,24 +1,24 @@
-import { Suspense } from 'react';
-import { notFound } from 'next/navigation';
-import { AxiosError } from 'axios';
+import { Suspense } from "react";
+import { notFound } from "next/navigation";
+import { AxiosError } from "axios";
 
 // API Service
-import { ProductApi } from '@/services/product.service';
+import { ProductApi } from "@/services/product.service";
 
 // Components
-import ProductGallery from '@/components/product/ProductGallery';
-import ProductInfo from '@/components/product/ProductInfo';
-import ImportantInfo from '@/components/product/ImportantInfo';
-import ProductDescription from '@/components/product/ProductDescription';
-import APlusRenderer from '@/components/product/aplus/APlusRenderer';
-import ProductDetails from '@/components/product/ProductDetails';
-import SimilarProducts from '@/components/product/SimilarProducts';
-import StickyAddToCart from '@/components/product/StickyAddToCart';
+import ProductGallery from "@/components/product/ProductGallery";
+import ProductInfo from "@/components/product/ProductInfo";
+import ImportantInfo from "@/components/product/ImportantInfo";
+import ProductDescription from "@/components/product/ProductDescription";
+import APlusRenderer from "@/components/product/aplus/APlusRenderer";
+import ProductDetails from "@/components/product/ProductDetails";
+import SimilarProducts from "@/components/product/SimilarProducts";
+import StickyAddToCart from "@/components/product/StickyAddToCart";
 
-export default async function ProductPage({ 
-  params 
-}: { 
-  params: Promise<{ slug: string }> 
+export default async function ProductPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
 }) {
   // 1. Await the params (Next.js 15+ requirement)
   const resolvedParams = await params;
@@ -48,22 +48,25 @@ export default async function ProductPage({
   return (
     <div className="min-h-screen bg-white pb-24 md:pb-8 relative">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
-        
         {/* 1. HERO SECTION */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-  <div className="lg:col-span-5">
-    <ProductGallery images={product.images || []} name={product.name} />
-  </div>
+          <div className="lg:col-span-5">
+            <ProductGallery images={product.images || []} name={product.name} />
+          </div>
 
-  <div className="lg:col-span-7">
-    <ProductInfo product={product as any} />
-  </div>
-</div>
+          <div className="lg:col-span-7">
+            <ProductInfo product={product as any} />
+          </div>
+        </div>
 
         <hr className="border-gray-200" />
 
         {/* 2. SIMILAR PRODUCTS */}
-        <Suspense fallback={<div className="h-64 bg-gray-50 animate-pulse rounded-lg w-full max-w-7xl mx-auto" />}>
+        <Suspense
+          fallback={
+            <div className="h-64 bg-gray-50 animate-pulse rounded-lg w-full max-w-7xl mx-auto" />
+          }
+        >
           {/* Assuming SimilarProducts internally fetches using ProductApi.getSimilarProducts */}
           <SimilarProducts category={product.category} productId={product.id} />
         </Suspense>
@@ -71,9 +74,7 @@ export default async function ProductPage({
         <hr className="border-gray-200" />
 
         {/* 3. IMPORTANT INFORMATION */}
-        {product.extra && (
-          <ImportantInfo extra={product.extra} />
-        )}
+        {product.extra && <ImportantInfo extra={product.extra} />}
 
         {/* 4. PRODUCT DESCRIPTION */}
         {product.description && (
@@ -81,13 +82,13 @@ export default async function ProductPage({
         )}
 
         {/* 5. A+ CONTENT */}
-        {product.extra?.aPlusContent && product.extra.aPlusContent.length > 0 && (
-          <APlusRenderer blocks={product.extra.aPlusContent} />
-        )}
+        {product.extra?.aPlusContent &&
+          product.extra.aPlusContent.length > 0 && (
+            <APlusRenderer blocks={product.extra.aPlusContent} />
+          )}
 
         {/* 6. PRODUCT DETAILS TABLE */}
         <ProductDetails product={product as any} />
-
       </main>
 
       {/* MOBILE STICKY ADD TO CART */}

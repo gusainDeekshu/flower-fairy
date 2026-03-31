@@ -2,7 +2,6 @@
 export default function ProductDetails({ product }: { product: any }) {
   // 🔥 FIX: Safely extract the category string
   const categoryName = product.category?.name || product.category;
-  console.log("Extracted detailsList name:", product );
 
   const detailsList = [
     { label: 'Manufacturer', value: product.extra?.manufacturer },

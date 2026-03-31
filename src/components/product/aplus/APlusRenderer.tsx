@@ -7,7 +7,6 @@ import TextBlock from './TextBlock';
 
 export default function APlusRenderer({ blocks }: { blocks: APlusContentResponse[] }) {
   if (!blocks || blocks.length === 0) return null;
-console.log("Rendering A+ content with blocks:", blocks);
   return (
     <div className="w-full max-w-7xl mx-auto space-y-12 md:space-y-20 py-12">
       {blocks.map((block, index) => {
