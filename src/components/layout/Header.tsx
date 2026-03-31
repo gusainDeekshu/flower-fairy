@@ -70,7 +70,7 @@ export function Header() {
                 🌸
               </div>
               <span className="text-xl sm:text-2xl font-bold text-gray-800 tracking-tight">
-                AE Naturals
+                Flower Fairy
               </span>
             </Link>
 

@@ -1,5 +1,5 @@
 
-# 🌸 AE Naturals Frontend
+# 🌸 Flower Fairy Frontend
 
 A professional, high-performance e-commerce storefront built with **Next.js 15**, **TypeScript**, and **Tailwind CSS**. This application provides a seamless shopping experience for premium gift items like flowers, cakes, and personalized gifts.
 
@@ -58,7 +58,7 @@ src/
 ### 1. Prerequisites
 * **Node.js** (v20+ recommended)
 * **pnpm** (preferred) or **npm**
-* A running instance of the [AE Naturals Backend](https://github.com/gusainDeekshu/flower-fairy-backend)
+* A running instance of the [Flower Fairy Backend](https://github.com/gusainDeekshu/flower-fairy-backend)
 
 ### 2. Installation
 ```bash
