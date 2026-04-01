@@ -14,5 +14,15 @@ export interface CartResponse {
 
 export interface AddToCartPayload {
   productId: string;
+  variantId?: string; // Optional, omit if product has no variants
   quantity: number;
+}
+
+
+export interface BuyNowPayload extends AddToCartPayload {}
+
+export interface CheckoutSessionResponse {
+  success: boolean;
+  checkoutSessionId: string;
+  expiresAt: string;
 }

@@ -1,10 +1,8 @@
-// src\store\useCartStore.ts
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { cartService } from "@/services/cart.service";
+import { CartService } from "@/services/cart.service";
 import { useAuthStore } from "./useAuthStore";
 
-// 🔥 1. ADD THIS INTERFACE AND EXPORT IT
 export interface CartItem {
   productId: string;
   variantId?: string;
@@ -15,15 +13,14 @@ export interface CartItem {
   storeId?: string;
 }
 
-// 🔥 2. Update CartState to use CartItem[] instead of any[]
 interface CartState {
   items: CartItem[]; 
   isLoading: boolean;
   fetchCart: () => Promise<void>;
   syncCart: () => Promise<void>;
   addItem: (item: CartItem) => Promise<void>;
-  removeItem: (productId: string) => Promise<void>;
-  updateQuantity: (productId: string, quantity: number) => Promise<void>;
+  removeItem: (productId: string, variantId?: string) => Promise<void>;
+  updateQuantity: (productId: string, quantity: number, variantId?: string) => Promise<void>;
   clearCart: () => Promise<void>;
 }
 
@@ -34,23 +31,22 @@ export const useCartStore = create<CartState>()(
       isLoading: false,
 
       fetchCart: async () => {
-        // 🔥 Get the LATEST user state dynamically
         const currentUser = useAuthStore.getState().user;
         if (!currentUser) return; 
 
         set({ isLoading: true });
         try {
-          const res: any = await cartService.getCart();
+          const res: any = await CartService.getCart();
           
-          // Safety check: Ensure items exist in response
           if (res && res.items) {
             const normalized = res.items.map((item: any) => ({
               productId: item.productId,
-              name: item.product.name,
-              price: item.price,
+              variantId: item.variantId,
+              name: item.variant?.name ? `${item.product.name} - ${item.variant.name}` : item.product.name,
+              price: item.priceSnapshot, // Updated to use priceSnapshot from backend
               image: item.product.images?.[0] || "",
               quantity: item.quantity,
-              storeId: item.product.storeId, 
+              storeId: item.tenantId, // backend uses tenantId instead of storeId
             }));
             
             set({ items: normalized });
@@ -77,22 +73,30 @@ export const useCartStore = create<CartState>()(
         try {
           // Sync all local guest items to the backend in parallel
           await Promise.all(
-            items.map((item: any) => cartService.addToCart(item.productId, item.quantity))
+            items.map((item: CartItem) => 
+              CartService.addToCart({
+                productId: item.productId,
+                variantId: item.variantId,
+                quantity: item.quantity
+              })
+            )
           );
-          // Pull the final merged cart from the DB
           await fetchCart();
         } catch (err) {
           console.error("Cart Sync failed:", err);
         }
       },
 
-      addItem: async (newItem: any) => {
+      addItem: async (newItem: CartItem) => {
         const currentUser = useAuthStore.getState().user;
         
         if (currentUser) {
           try {
-            // Logged in: Add to DB, then fetch updated cart
-            await cartService.addToCart(newItem.productId, newItem.quantity);
+            await CartService.addToCart({
+              productId: newItem.productId,
+              variantId: newItem.variantId,
+              quantity: newItem.quantity
+            });
             await get().fetchCart();
           } catch (err) {
             console.error("Failed to add item to remote cart", err);
@@ -100,12 +104,14 @@ export const useCartStore = create<CartState>()(
         } else {
           // Guest: Manage state locally
           const currentItems = get().items;
-          const existing = currentItems.find((i: any) => i.productId === newItem.productId);
+          const existing = currentItems.find(
+            (i: CartItem) => i.productId === newItem.productId && i.variantId === newItem.variantId
+          );
           
           if (existing) {
             set({
-              items: currentItems.map((i: any) =>
-                i.productId === newItem.productId
+              items: currentItems.map((i: CartItem) =>
+                i.productId === newItem.productId && i.variantId === newItem.variantId
                   ? { ...i, quantity: i.quantity + newItem.quantity }
                   : i
               ),
@@ -115,35 +121,40 @@ export const useCartStore = create<CartState>()(
           }
         }
       },
-      removeItem: async (productId: string) => {
+
+      removeItem: async (productId: string, variantId?: string) => {
         const { user } = useAuthStore.getState();
         if (user) {
           try {
-            await cartService.removeItem(productId);
+            await CartService.removeItem({ productId, variantId });
             await get().fetchCart();
           } catch (err) {
             console.error("Remove failed", err);
           }
         } else {
           set({
-            items: get().items.filter((i: any) => i.productId !== productId),
+            items: get().items.filter(
+              (i: CartItem) => !(i.productId === productId && i.variantId === variantId)
+            ),
           });
         }
       },
 
-      updateQuantity: async (productId: string, quantity: number) => {
+      updateQuantity: async (productId: string, quantity: number, variantId?: string) => {
         const { user } = useAuthStore.getState();
         if (user) {
           try {
-            await cartService.updateQuantity(productId, quantity);
+            await CartService.updateQuantity({ productId, variantId, quantity });
             await get().fetchCart();
           } catch (err) {
             console.error("Update failed", err);
           }
         } else {
           set({
-            items: get().items.map((i: any) =>
-              i.productId === productId ? { ...i, quantity } : i,
+            items: get().items.map((i: CartItem) =>
+              i.productId === productId && i.variantId === variantId 
+                ? { ...i, quantity } 
+                : i
             ),
           });
         }
@@ -151,13 +162,13 @@ export const useCartStore = create<CartState>()(
 
       clearCart: async () => {
         const { user } = useAuthStore.getState();
-        if (user) await cartService.clearCart();
+        if (user) await CartService.clearCart();
         set({ items: [] });
       },
     }),
     {
       name: "flower-fairy-cart",
-      partialize: (state: any) => ({ items: state.items }),
+      partialize: (state: CartState) => ({ items: state.items }),
     },
   ),
 );

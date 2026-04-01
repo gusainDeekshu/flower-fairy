@@ -1,39 +1,233 @@
 
-# 🌸 Flower Fairy Frontend
+# 🌸 AE Naturals Frontend
 
-A professional, high-performance e-commerce storefront built with **Next.js 15**, **TypeScript**, and **Tailwind CSS**. This application provides a seamless shopping experience for premium gift items like flowers, cakes, and personalized gifts.
+A **production-ready, high-performance e-commerce storefront** built with **Next.js 15**, **TypeScript**, and **Tailwind CSS**.
+The application is designed to deliver a **fast, scalable, and SEO-optimized shopping experience** for premium gifting products such as flowers, cakes, and personalized items.
 
-🔗 **[Live Demo](https://flower-fairy-murex.vercel.app)** | 🖥️ **[GitHub Repository](https://github.com/gusainDeekshu/flower-fairy)**
+It leverages modern frontend architecture patterns including:
 
+* Server Components for performance
+* Client Components for interactivity
+* State persistence
+* Secure OTP authentication
+* Advanced cart synchronization logic
 
-
-## ✨ Features
-
-* **⚡ Next.js 15 App Router:** Optimized performance using Server Components for SEO and Client Components for interactivity.
-* **🔑 Persistent OTP Authentication:** Secure, password-less login with a global `AuthProvider` that restores user sessions from `HttpOnly` cookies even after a page refresh (F5).
-* **🛒 Intelligent Shopping Cart:** Fully functional cart using **Zustand** with `localStorage` persistence. Features automatic **Guest-to-User merging**, ensuring items added before login are synchronized with the database account.
-* **🛡️ Robust Error Handling:** Centralized Axios interceptors in `api-client.ts` to handle 401 token refreshes silently and provide 500-level crash protection.
-* **🎨 Dynamic Branding:** Multi-tenant ready theme configuration system to support various store identities.
-* **🔄 Server State Management:** High-speed data fetching, caching, and background synchronization using **TanStack Query**.
-* **📱 Mobile-First Design:** Fully responsive, modern layouts built with **Tailwind CSS**, **Shadcn UI**, and **Lucide Icons**.
+🔗 **Live Demo:** [https://flower-fairy-murex.vercel.app](https://flower-fairy-murex.vercel.app)
+🖥️ **Frontend Repository:** [https://github.com/gusainDeekshu/flower-fairy](https://github.com/gusainDeekshu/flower-fairy)
 
 ---
 
-## 🛠️ Tech Stack
+# 🎯 Project Goals
 
-| Category | Technology |
-| :--- | :--- |
-| **Framework** | Next.js 15 (App Router) |
-| **Language** | TypeScript |
-| **Styling** | Tailwind CSS + Shadcn UI |
-| **State Management** | Zustand (Global) + TanStack Query (Server) |
-| **Networking** | Axios + Centralized Interceptors |
-| **Auth & Validation** | Zod + JWT |
-| **Notifications** | Sonner |
+This project was built to achieve the following:
+
+• Deliver **blazing fast page loads** with optimized rendering
+• Maintain **secure and persistent authentication** without passwords
+• Provide **smooth cart experience across guest and logged-in sessions**
+• Enable **scalable multi-brand storefront support**
+• Ensure **robust error handling and session stability**
 
 ---
 
-## 📂 Folder Structure
+# ✨ Core Features
+
+## ⚡ Next.js 15 App Router Architecture
+
+The application uses the **Next.js App Router** which introduces a more powerful routing and rendering system.
+
+Key benefits:
+
+• Server Components improve SEO and reduce client bundle size
+• Streaming UI for faster perceived performance
+• Layout-based architecture for scalable UI composition
+• Built-in support for API routes and middleware
+
+This ensures:
+
+• Faster page rendering
+• Better search engine indexing
+• Reduced client-side JavaScript
+
+---
+
+## 🔑 Persistent OTP Authentication System
+
+Instead of traditional password login, the system uses a **secure OTP-based authentication flow**.
+
+### How It Works
+
+1. User enters phone/email.
+2. Backend sends OTP.
+3. OTP verification generates:
+
+   * Access Token
+   * Refresh Token (stored in HttpOnly cookie)
+4. On page refresh:
+
+   * Frontend automatically restores the session.
+
+### Authentication Architecture
+
+AuthProvider handles:
+
+• Session restoration
+• Login state
+• User data hydration
+• Silent token refresh
+
+This prevents:
+
+• Unexpected logouts
+• Broken sessions
+• Authentication delays
+
+---
+
+## 🛒 Intelligent Shopping Cart System
+
+The cart is powered by **Zustand state management** with local persistence.
+
+### Key Capabilities
+
+Guest Cart Support
+Users can add products before login.
+
+Cart Persistence
+Cart is saved in localStorage to prevent loss on refresh.
+
+Guest-to-User Cart Merge
+When a user logs in:
+
+1. Local cart items are detected
+2. API sync pushes them to database
+3. Server cart is merged automatically
+
+This ensures:
+
+• No lost items
+• Seamless user experience
+• Cross-device consistency
+
+---
+
+## 🔄 Server State Management with TanStack Query
+
+The application uses **TanStack Query** to manage API-driven state.
+
+Benefits:
+
+• Smart caching
+• Background refetching
+• Optimistic updates
+• Reduced API calls
+• Better performance
+
+This is especially useful for:
+
+• Product listings
+• Cart updates
+• Order history
+• User profile data
+
+---
+
+## 🛡️ Advanced Error Handling System
+
+The app uses **centralized Axios interceptors** located in:
+
+```
+lib/api-client.ts
+```
+
+This system automatically handles:
+
+### 401 Unauthorized
+
+Token expired → refresh token used → retry request
+
+### 500 Server Errors
+
+Graceful failure UI + logging
+
+### Network Failures
+
+Retry-safe architecture
+
+This results in:
+
+• Fewer user disruptions
+• Stable authentication flows
+• Consistent API behavior
+
+---
+
+## 🎨 Dynamic Branding (Multi-Tenant Ready)
+
+The system includes a **brand configuration layer** that allows multiple store identities.
+
+Located in:
+
+```
+config/
+```
+
+This enables:
+
+• Multiple storefronts using same codebase
+• Custom themes
+• Brand color overrides
+• Logo and UI variation
+
+Useful for:
+
+• Marketplace platforms
+• Franchise stores
+• White-label deployments
+
+---
+
+## 📱 Mobile-First UI System
+
+The UI is designed with **mobile-first responsiveness** using:
+
+• Tailwind CSS
+• Shadcn UI
+• Lucide Icons
+
+Design principles used:
+
+• Component-based layout
+• Accessible UI
+• Adaptive grids
+• Performance optimized animations
+
+Result:
+
+• Works perfectly across devices
+• Fast UI rendering
+• Clean and modern UX
+
+---
+
+# 🛠️ Technology Stack
+
+| Layer            | Technology     |
+| ---------------- | -------------- |
+| Framework        | Next.js 15     |
+| Language         | TypeScript     |
+| Styling          | Tailwind CSS   |
+| UI System        | Shadcn UI      |
+| Icons            | Lucide         |
+| State Management | Zustand        |
+| Server State     | TanStack Query |
+| HTTP Client      | Axios          |
+| Authentication   | JWT + OTP      |
+| Validation       | Zod            |
+| Notifications    | Sonner         |
+
+---
+
+# 📂 Detailed Folder Structure
 
 ```text
 src/
@@ -58,47 +252,158 @@ src/
 ### 1. Prerequisites
 * **Node.js** (v20+ recommended)
 * **pnpm** (preferred) or **npm**
-* A running instance of the [Flower Fairy Backend](https://github.com/gusainDeekshu/flower-fairy-backend)
+* A running instance of the [AE Naturals Backend](https://github.com/gusainDeekshu/flower-fairy-backend)
 
-### 2. Installation
+---
+
+## 2. Clone the Repository
+
 ```bash
 git clone https://github.com/gusainDeekshu/flower-fairy.git
 cd flower-fairy
+```
+
+---
+
+## 3. Install Dependencies
+
+```bash
 npm install
 ```
 
-### 3. Environment Variables
-Create a `.env.local` file in the root directory:
-```env
-# Backend API Base URL
-NEXT_PUBLIC_API_URL="http://localhost:4000/api/v1"
+or
+
+```bash
+pnpm install
 ```
 
-### 4. Running Locally
+---
+
+## 4. Environment Configuration
+
+Create:
+
+```
+.env.local
+```
+
+Add:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:4000/api/v1
+```
+
+This connects the frontend to the backend API.
+
+---
+
+## 5. Run the Development Server
+
 ```bash
-# Start development server with Turbopack
 npm run dev
 ```
 
----
+The app will run at:
 
-## 🔄 Core Workflow: Session & Cart Sync
-
-The application uses a sophisticated synchronization flow to ensure data integrity:
-1.  **Session Recovery**: On every page refresh, the `AuthProvider` calls `/auth/me`. If the access token is missing, the `api-client` uses the `refresh_token` cookie to restore the session silently.
-2.  **Cart Merging**: If a guest adds items to their cart and then logs in, the `syncCart` function pushes local items to the database, ensuring no data is lost during the transition.
-3.  **Error Resilience**: Axios interceptors detect 401 errors and automatically attempt a single retry after refreshing the token, providing a smooth user experience without manual re-logins.
+```
+http://localhost:3000
+```
 
 ---
 
-## 👤 Author
+# 🔄 Core Workflow: Session & Cart Synchronization
 
-**Deekshant Gusain**
-* **GitHub**: [@gusainDeekshu](https://github.com/gusainDeekshu)
-* **Portfolio**: [deekshantportfoliosite.netlify.app](https://deekshantportfoliosite.netlify.app/)
+This is one of the most important features of the application.
+
+### Step 1 — Session Recovery
+
+On page load:
+
+```
+AuthProvider → /auth/me
+```
+
+If access token expired:
+
+```
+refresh_token cookie → generate new token
+```
+
+User stays logged in without interruption.
 
 ---
 
-## 📄 License
+### Step 2 — Cart Synchronization
+
+Scenario:
+
+Guest adds items → then logs in.
+
+Flow:
+
+1 Local cart detected
+2 syncCart triggered
+3 Backend cart merged
+4 Local cart cleared
+
+Outcome:
+
+No cart data loss.
+
+---
+
+### Step 3 — Error Recovery
+
+Axios interceptors automatically:
+
+• detect expired tokens
+• retry requests
+• maintain stable API communication
+
+---
+
+# 🔐 Security Design
+
+The system follows modern web security practices.
+
+Access tokens stored in memory
+Refresh tokens stored in HttpOnly cookies
+OTP authentication reduces credential leaks
+Zod schema validation protects API inputs
+
+---
+
+# 📈 Performance Optimizations
+
+Several techniques were used:
+
+Server Components reduce bundle size
+TanStack Query caching reduces network calls
+Lazy loading of UI sections
+Optimized image loading
+Turbopack dev performance boost
+
+---
+
+# 👨‍💻 Author
+
+Deekshant Gusain
+
+GitHub
+[https://github.com/gusainDeekshu](https://github.com/gusainDeekshu)
+
+Portfolio
+[https://deekshantportfoliosite.netlify.app](https://deekshantportfoliosite.netlify.app)
+
+---
+
+# 📄 License
 
 This project is licensed under the **MIT License**.
+
+You are free to:
+
+• Use
+• Modify
+• Distribute
+• Build commercial projects

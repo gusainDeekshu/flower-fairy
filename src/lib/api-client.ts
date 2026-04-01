@@ -1,5 +1,6 @@
 import { useAuthStore } from "@/store/useAuthStore";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+import { getGuestSessionId } from './session';
 
 // This "Augmentation" tells TS that axios methods return the data directly
 declare module "axios" {
@@ -27,6 +28,12 @@ export const apiClient = axios.create({
  * 2. Attaches the Tenant Domain so the backend knows which store to query dynamically.
  */
 apiClient.interceptors.request.use((config) => {
+  // Attach Guest Session ID
+  const sessionId = getGuestSessionId();
+  if (sessionId) {
+    config.headers['x-session-id'] = sessionId;
+  }
+  
   const token = useAuthStore.getState().accessToken;
 
   // 1. Auth Headers
