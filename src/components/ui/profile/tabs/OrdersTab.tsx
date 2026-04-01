@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Order } from '@/types/profile';
 import Link from 'next/link';
-import apiClient from '@/lib/api-client';
+import {apiClient} from '@/lib/api-client';
 
 export function OrdersTab() {
   const [orders, setOrders] = useState<Order[]>([]);

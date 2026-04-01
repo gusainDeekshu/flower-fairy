@@ -9,7 +9,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { useCartStore } from '@/store/useCartStore';
 import { WishlistItem } from '@/types/profile';
 import Image from 'next/image';
-import apiClient from '@/lib/api-client';
+import {apiClient} from '@/lib/api-client';
 
 export function WishlistTab() {
   const [items, setItems] = useState<WishlistItem[]>([]);

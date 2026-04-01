@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Review } from '@/types/profile';
 import Image from 'next/image';
-import apiClient from '@/lib/api-client';
+import {apiClient} from '@/lib/api-client';
 
 export function ReviewsTab() {
   const [reviews, setReviews] = useState<Review[]>([]);

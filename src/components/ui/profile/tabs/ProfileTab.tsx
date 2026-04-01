@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-hot-toast";
 import { Skeleton } from "@/components/ui/skeleton";
-import apiClient from "@/lib/api-client";
+import {apiClient} from "@/lib/api-client";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Check, X, Edit2, Loader2 } from "lucide-react";
 

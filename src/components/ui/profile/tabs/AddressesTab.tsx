@@ -7,7 +7,7 @@ import { MapPin, Plus, Trash2, X } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Address } from '@/types/profile';
-import apiClient from '@/lib/api-client';
+import {apiClient} from '@/lib/api-client';
 
 const INITIAL_FORM = { name: '', phone: '', addressLine: '', city: '', state: '', pincode: '', isDefault: false };
 

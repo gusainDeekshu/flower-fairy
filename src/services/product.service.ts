@@ -27,13 +27,13 @@ export class ProductApi {
   /* ------------------------------ GET PRODUCTS ----------------------------- */
 
   static async getProducts(category?: string): Promise<Product[]> {
-    const res = await apiClient.get("/products", {
+   // Extract data!
+    const { data } = await apiClient.get("/products", {
       params: { category },
     });
 
-
-    const validated = z.array(ProductSchema).parse(res);
-
+// Parse the data!
+    const validated = z.array(ProductSchema).parse(data);
     return validated;
   }
 
@@ -41,10 +41,15 @@ export class ProductApi {
 
   static async getProductBySlug(slug: string): Promise<Product> {
     try {
-      const res = await apiClient.get(`/products/${slug}`);
 
+      // const res = await apiClient.get(`/products/${slug}`);
+// 🚨 FIX: Destructure { data } from the response
+      const { data } = await apiClient.get(`/products/${slug}`);
+      
+      // 🚨 FIX: Pass the data into Zod, not the full Axios response
+      const validated = ProductSchema.parse(data);
 
-      const validated = ProductSchema.parse(res);
+      // const validated = ProductSchema.parse(res);
 
       return validated;
     } catch (error) {
@@ -55,12 +60,20 @@ export class ProductApi {
 
   /* -------------------------- GET SIMILAR PRODUCTS ------------------------- */
 
-  static async getSimilarProducts(category: string): Promise<SimilarProduct[]> {
-    const res = await apiClient.get(`/products/similar/${category}`);
+  static async getSimilarProducts(category: string) {
+    try {
+      // 🚨 FIX 1: Destructure { data } from the Axios response
+      const { data } = await apiClient.get("/products", {
+        params: { category },
+      });
 
+      // 🚨 FIX 2: Pass 'data' to Zod, not 'res'
+      const validated = z.array(SimilarProductSchema).parse(data);
 
-    const validated = z.array(SimilarProductSchema).parse(res);
-
-    return validated;
+      return validated;
+    } catch (error) {
+      console.error("Failed to fetch similar products:", error);
+      throw error;
+    }
   }
 }

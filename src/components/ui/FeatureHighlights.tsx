@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import * as LucideIcons from "lucide-react";
-import apiClient from "@/lib/api-client";
+import {apiClient} from "@/lib/api-client";
 
 // Smart Icon Resolver
 const DynamicIcon = ({

@@ -1,6 +1,6 @@
-import { useAuthStore } from "@/store/useAuthStore";
-import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
-import { getGuestSessionId } from './session';
+// src/lib/api-client.ts
+import axios from 'axios';
+import { useAuthStore } from '@/store/useAuthStore';
 
 // This "Augmentation" tells TS that axios methods return the data directly
 declare module "axios" {
@@ -16,92 +16,100 @@ declare module "axios" {
   }
 }
 
-// 1. Create the instance
 export const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1",
-  withCredentials: true, // Critical for sending HTTP-Only cookies
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  withCredentials: true, // Forces browser to send HttpOnly cookies
 });
 
-/**
- * REQUEST INTERCEPTOR
- * 1. Attaches the Access Token (from Zustand RAM) to every outgoing request.
- * 2. Attaches the Tenant Domain so the backend knows which store to query dynamically.
- */
+// Request Interceptor: Attach Access Token
 apiClient.interceptors.request.use((config) => {
-  // Attach Guest Session ID
-  const sessionId = getGuestSessionId();
-  if (sessionId) {
-    config.headers['x-session-id'] = sessionId;
-  }
-  
   const token = useAuthStore.getState().accessToken;
-
-  // 1. Auth Headers
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-
-  // 2. Dynamic Tenant Domain (Multi-tenant Architecture)
-  // Ensures the backend can resolve `storeSlug` via domain/hostname
-  if (typeof window !== "undefined") {
-    config.headers["x-tenant-domain"] = window.location.hostname;
-  }
-
   return config;
 });
 
-/**
- * RESPONSE INTERCEPTOR
- * 1. Unwraps data so components get { user, token } directly.
- * 2. Handles 401 Unauthorized errors by attempting a "Silent Refresh".
- */
+// Variables to handle parallel requests during a refresh
+let isRefreshing = false;
+let failedQueue: any[] = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
+// Response Interceptor: Handle 401 & Token Rotation
 apiClient.interceptors.response.use(
-  (response) => {
-    // Return the nested data so we don't have to call .data.data in our components
-    return response.data;
-  },
+  (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // 🔥 FIX: Check if this is an authentication route
-    // We do NOT want to trigger a silent refresh if an OTP simply failed verification.
-    const isAuthRoute = originalRequest.url?.includes('/auth/verify-otp') || 
-                        originalRequest.url?.includes('/auth/refresh') ||
-                        originalRequest.url?.includes('/auth/me');
+    // 🚨 FIX 1: Prevent infinite loops if the refresh endpoint itself fails
+    if (originalRequest.url?.includes('/auth/refresh')) {
+      return Promise.reject(error);
+    }
 
-    // 401 means Access Token expired. We try to refresh using the HTTP-Only cookie.
-    // We check !originalRequest._retry to prevent infinite loops if refresh also fails.
-    // 🔥 Added `&& !isAuthRoute` to prevent the interceptor loop
-    if (error.response?.status === 401 && !originalRequest._retry && !isAuthRoute) {
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise(function (resolve, reject) {
+          failedQueue.push({ resolve, reject });
+        })
+        .then(token => {
+          originalRequest.headers['Authorization'] = 'Bearer ' + token;
+          return apiClient(originalRequest);
+        })
+        .catch(err => Promise.reject(err));
+      }
+
       originalRequest._retry = true;
+      isRefreshing = true;
 
       try {
-        // We use the raw axios instance here to avoid the interceptors for the refresh call
-        const refreshResponse = await axios.post(
-          `${apiClient.defaults.baseURL}/auth/refresh`,
+        // 🚨 FIX 2: Use raw 'axios' instead of 'apiClient' to bypass interceptors for the refresh call
+        const { data } = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
           {},
-          { withCredentials: true }
+          { withCredentials: true } // Send the secure cookie
         );
-
-        // The backend returns { access_token, user }
-        const { access_token, user } = refreshResponse.data;
-
-        // Update the Zustand store (RAM only, as we discussed for security)
-        useAuthStore.getState().setAuth(user, access_token);
-
-        // Update the failed request's header and retry it
-        originalRequest.headers.Authorization = `Bearer ${access_token}`;
+        
+        // Save new access token to Zustand store
+        useAuthStore.getState().setAuth(data.user, data.access_token);
+        
+        // Process queue and retry failed requests
+        processQueue(null, data.access_token);
+        originalRequest.headers['Authorization'] = `Bearer ${data.access_token}`;
+        
         return apiClient(originalRequest);
-      } catch (refreshError) {
-        // Refresh token is also expired or invalid - Force Logout
-        useAuthStore.getState().logout();
-        return Promise.reject(refreshError);
+      } catch (err) {
+        processQueue(err, null);
+        
+        // Wipe frontend state
+        useAuthStore.getState().logout(); 
+
+        // 🚨 FIX 3: Stop redirecting to 404 '/login'. 
+        // Only kick the user to Home '/' if they are looking at protected data.
+        if (typeof window !== 'undefined') {
+          const protectedRoutes = ['/profile', '/checkout'];
+          const currentPath = window.location.pathname;
+          
+          if (protectedRoutes.some(route => currentPath.startsWith(route))) {
+             window.location.href = '/'; 
+          }
+        }
+
+        return Promise.reject(err);
+      } finally {
+        isRefreshing = false;
       }
     }
 
     return Promise.reject(error);
   }
 );
-
-// We export it as default to satisfy Next.js/Turbopack requirements
-export default apiClient;

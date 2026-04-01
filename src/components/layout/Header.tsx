@@ -11,6 +11,7 @@ import { BRAND } from "@/config/brand.config";
 import { useCartStore } from "@/store/useCartStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { OtpModal } from "@/components/auth/OtpModal";
+import { apiClient } from "@/lib/api-client";
 
 export function Header() {
   const [isLoginModalOpen, setLoginModalOpen] = useState(false);
@@ -35,9 +36,20 @@ export function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
-    logout();
-    setIsDropdownOpen(false);
+  const handleLogout = async () => {
+    try {
+      // 1. Tell the backend to destroy the HttpOnly cookie & DB Session
+      await apiClient.post('/auth/logout');
+    } catch (error) {
+      console.warn("Backend logout failed, clearing local state anyway.");
+    } finally {
+      // 2. Clear React/Zustand memory
+      logout();
+      setIsDropdownOpen(false);
+      
+      // 3. Kick the user back to the homepage so protected data disappears
+      window.location.href = "/"; 
+    }
   };
 
   return (

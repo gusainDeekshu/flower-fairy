@@ -1,5 +1,5 @@
 //src\hooks\useAddToCart.ts
-import apiClient from "@/lib/api-client";
+import {apiClient} from "@/lib/api-client";
 import {
   CartResponse,
   AddToCartPayload,
