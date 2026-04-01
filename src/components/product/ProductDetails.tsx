@@ -16,7 +16,6 @@ export default function ProductDetails({ product }: { product: any }) {
   (product.attributes || []).forEach((attr: any) => {
     if (!attr?.name || !attr?.value) return; // safety check
 
-    console.log(`Processing attribute - Name: ${attr.name}, Value: ${attr.value}`);
 
     detailsList.push({
       label: attr.name,
