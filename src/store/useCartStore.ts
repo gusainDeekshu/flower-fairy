@@ -72,19 +72,21 @@ export const useCartStore = create<CartState>()(
 
         try {
           // Sync all local guest items to the backend in parallel
-          await Promise.all(
-            items.map((item: CartItem) => 
-              CartService.addToCart({
-                productId: item.productId,
-                variantId: item.variantId,
-                quantity: item.quantity
-              })
-            )
-          );
+          // ADD THIS INSTEAD:
+          // Sync items sequentially to prevent DB Cart creation race conditions
+          for (const item of items) {
+            await CartService.addToCart({
+              productId: item.productId,
+              variantId: item.variantId,
+              quantity: item.quantity
+            });
+          }
+
           await fetchCart();
         } catch (err) {
           console.error("Cart Sync failed:", err);
         }
+        
       },
 
       addItem: async (newItem: CartItem) => {
