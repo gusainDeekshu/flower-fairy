@@ -1,4 +1,5 @@
-# 🌸 AE Naturals Frontend
+
+# 🌸 Flower Fairy Frontend
 
 A **production-ready, high-performance e-commerce storefront** built with **Next.js 15**, **TypeScript**, and **Tailwind CSS**.
 The application is designed to deliver a **fast, scalable, and SEO-optimized shopping experience** for premium gifting products such as flowers, cakes, and personalized items.
@@ -228,154 +229,30 @@ Result:
 
 # 📂 Detailed Folder Structure
 
-```
+```text
 src/
+├── app/            # Pages, Layouts, and dynamic API routes
+├── components/     # Feature-based components
+│   ├── auth/       # OTP Modal with auto-sync logic
+│   ├── home/       # Hero sections and Product Showcase
+│   ├── product/    # Product details and AddToCart logic
+│   ├── providers/  # Global Auth and Query providers
+│   └── ui/         # Atomic Shadcn primitives
+├── hooks/          # Custom hooks for catalog and auth initialization
+├── lib/            # Axios instance and session recovery logic
+├── services/       # API abstraction layer (Cart, Product, Orders)
+├── store/          # Zustand stores for Cart and Auth state
+└── config/         # Multi-tenant brand settings
 ```
 
-## app/
-
-Contains the core routing system using Next.js App Router.
-
-Includes:
-
-• Page routes
-• Layout components
-• Server-side logic
-• Dynamic routes
-
 ---
 
-## components/
+## 🚀 Getting Started
 
-Reusable UI and feature components.
-
-### auth/
-
-Handles login system.
-
-Includes:
-
-• OTP modal
-• login flow
-• auth sync logic
-
-### home/
-
-Landing page sections such as:
-
-• Hero banners
-• Product showcases
-• Promotional UI
-
-### product/
-
-Product-related UI:
-
-• Product detail page
-• Add to cart logic
-• Image gallery
-
-### providers/
-
-Global providers:
-
-• AuthProvider
-• QueryClientProvider
-
-### ui/
-
-Atomic UI components powered by Shadcn.
-
-Examples:
-
-• Button
-• Dialog
-• Input
-• Toast
-
----
-
-## hooks/
-
-Custom hooks such as:
-
-• useProducts
-• useCart
-• useAuthInit
-
-These abstract complex logic away from components.
-
----
-
-## lib/
-
-Core infrastructure logic.
-
-Includes:
-
-• Axios instance
-• token refresh logic
-• request interceptors
-
----
-
-## services/
-
-API service layer.
-
-Handles:
-
-• Cart APIs
-• Product APIs
-• Order APIs
-• Auth APIs
-
-This improves:
-
-• code maintainability
-• separation of concerns
-
----
-
-## store/
-
-Zustand state stores.
-
-Includes:
-
-Cart Store
-Auth Store
-
-Responsibilities:
-
-• Global state
-• local persistence
-• UI state sync
-
----
-
-## config/
-
-Brand configuration and theme settings.
-
-Used for:
-
-• multi-tenant setups
-• dynamic branding
-
----
-
-# 🚀 Getting Started
-
-## 1. Prerequisites
-
-Make sure you have installed:
-
-Node.js v20 or higher
-npm / pnpm / yarn
-
-Backend service running:
-[https://github.com/gusainDeekshu/flower-fairy-backend](https://github.com/gusainDeekshu/flower-fairy-backend)
+### 1. Prerequisites
+* **Node.js** (v20+ recommended)
+* **pnpm** (preferred) or **npm**
+* A running instance of the [Flower Fairy Backend](https://github.com/gusainDeekshu/flower-fairy-backend)
 
 ---
 
@@ -530,3 +407,7 @@ You are free to:
 • Modify
 • Distribute
 • Build commercial projects
+
+
+
+**********************************************************************************************
