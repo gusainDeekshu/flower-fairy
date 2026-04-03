@@ -26,7 +26,6 @@ export default function CartPage() {
   const total = subtotal + deliveryCharge;
 
   // src/app/cart/page.tsx
-  console.log("Cart Items at Checkout:", items); // Debug log to check cart items
 
   const handleCheckout = async () => {
     // 1. If not logged in, open modal

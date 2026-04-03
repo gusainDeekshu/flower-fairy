@@ -10,5 +10,9 @@ export const orderService = {
   async getMyOrders() {
     const { data } = await apiClient.get('/orders/my-orders');
     return data;
+  },
+  async getOrderById(orderId: string) {
+    const { data } = await apiClient.get(`/orders/${orderId}/status`);
+    return data;
   }
 };

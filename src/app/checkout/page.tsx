@@ -4,33 +4,36 @@ import { useCartStore } from "@/store/useCartStore";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { orderService } from "@/services/order.service";       // ADD THIS
+import { paymentService } from "@/services/payment.service";   // ADD THIS
 
 export default function CheckoutPage() {
-  const { items, clearCart } = useCartStore();
+  const { items } = useCartStore();
   const [isProcessing, setIsProcessing] = useState(false);
   const router = useRouter();
 
   const total = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
-
   const handlePlaceOrder = async () => {
     setIsProcessing(true);
     try {
-      // 1. Create Order
-      const orderRes = await fetch("/api/orders/create", { method: "POST" });
-      const order = await orderRes.json();
+      const storeId = items[0]?.storeId || "default-store"; // Safely extract storeId
+
+      // 1. Create Order using existing service
+      const order = await orderService.createOrder(storeId);
 
       // 2. Initiate Payment
-      const payRes = await fetch("/api/payments/create", {
-        method: "POST",
-        body: JSON.stringify({ orderId: order.id, provider: "STRIPE" }),
-      });
-      const { checkoutUrl } = await payRes.json();
-
-      // Redirect to Gateway or Success
-      if (checkoutUrl) window.location.href = checkoutUrl;
-      else router.push(`/order-success/${order.id}`);
+      const payRes = await paymentService.initiatePayment(order.id, "STRIPE");
       
-      clearCart();
+      // Axios may nest response inside .data based on your interceptor setup
+      const checkoutUrl = payRes?.data?.url || payRes?.data?.checkoutUrl || payRes?.checkoutUrl;
+
+      // 3. Redirect
+      if (checkoutUrl) {
+        window.location.href = checkoutUrl;
+      } else {
+        router.push(`/order-success/${order.id}`);
+      }
+      // ❌ Do NOT call clearCart() here. Wait for successful payment callback.
     } catch (err) {
       console.error("Checkout failed", err);
     } finally {
