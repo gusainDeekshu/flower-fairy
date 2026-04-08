@@ -64,7 +64,7 @@ export function Footer() {
       {/* Bottom Section: Copyright, Socials, Payments */}
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
         
-        <p className="text-sm opacity-70">© 2026 AE Naturals. All rights reserved.</p>
+        <p className="text-sm opacity-70">© 2026 Flower Fairy. All rights reserved.</p>
 
         {/* Social Icons */}
         <div className="flex gap-4">
