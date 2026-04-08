@@ -10,11 +10,12 @@ interface User {
 }
 
 interface AuthState {
+  // 🗑️ REMOVED: token: any; (We don't need this anymore, we use accessToken)
   user: User | null;
   accessToken: string | null;
   isAuthenticated: boolean;
   _hasHydrated: boolean;
-  setAuth: (user: User, token: string) => void;
+  setAuth: (user: User, token: string | null) => void; 
   setAccessToken: (token: string) => void;
   setGuest: () => void;
   setHasHydrated: (state: boolean) => void;
@@ -33,7 +34,7 @@ export const useAuthStore = create<AuthState>()(
         set({
           user,
           accessToken: token,
-          isAuthenticated: true,
+          isAuthenticated: !!token, 
         }),
 
       setAccessToken: (token) => set({ accessToken: token, isAuthenticated: true }),
@@ -52,9 +53,9 @@ export const useAuthStore = create<AuthState>()(
     {
       name: "flower-fairy-auth",
       storage: createJSONStorage(() => localStorage),
-      // CRITICAL: Ensure 'user' is included here
       partialize: (state) => ({ 
-        user: state.user, 
+        user: state.user,
+        accessToken: state.accessToken, 
         isAuthenticated: state.isAuthenticated 
       }),
       onRehydrateStorage: () => (state) => {

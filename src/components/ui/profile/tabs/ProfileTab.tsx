@@ -1,16 +1,23 @@
+// src/components/ui/profile/tabs/ProfileTab.tsx
+
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
-import {apiClient} from "@/lib/api-client";
+import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Check, X, Edit2, Loader2 } from "lucide-react";
 
 export function ProfileTab() {
-  const { user: persistedUser, isAuthenticated, setAuth } = useAuthStore();
-  const [user, setUser] = useState<any>(persistedUser || null);
-  const [loading, setLoading] = useState(!persistedUser);
+  const {
+    user: persistedUser,
+    isAuthenticated,
+    setAuth,
+    _hasHydrated,
+  } = useAuthStore();
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   // Edit State Management (Flipkart-style ensures only one field is edited at a time)
   type EditableField = "name" | "gender" | "email" | "phone" | null;
@@ -24,25 +31,41 @@ export function ProfileTab() {
 
   const fetchProfile = useCallback(async () => {
     try {
-      // 🔥 FIX: Changed from '/users/me' to '/auth/me'
-      const res = await apiClient.get("/auth/me", {
-        headers: {
-          "X-User-Id": persistedUser?.id || "",
-          "X-User-Email": persistedUser?.email || "",
-        },
-      });
-      // The auth/me endpoint returns { user, access_token }
-      setUser(res.data.user);
+      const res = await apiClient.get("/profile/users/me");
+
+      // 🔥 FIX 1: Merge the response with existing data so missing backend fields don't erase UI state
+      setUser((prevUser: any) => ({
+        ...prevUser,
+        ...res.data,
+      }));
     } catch (error) {
       toast.error("Failed to load profile data");
     } finally {
       setLoading(false);
     }
-  }, [persistedUser, isAuthenticated]);
+  }, []);
 
   useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
+    if (_hasHydrated) {
+      if (persistedUser) setUser(persistedUser);
+      fetchProfile();
+    }
+    // 🔥 FIX 2: Remove `persistedUser` from the dependency array.
+    // We ONLY want to fetch when the component mounts/hydrates, not after every save.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [_hasHydrated]);
+
+  if (!_hasHydrated || loading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-48 mb-6" />
+        <div className="space-y-4 max-w-2xl mt-8">
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+        </div>
+      </div>
+    );
+  }
 
   // Open inline edit mode
   const handleEditClick = (field: EditableField, currentValue: string) => {
@@ -61,33 +84,41 @@ export function ProfileTab() {
   };
 
   // Generic Update API Call
-  const updateProfile = async (data: Record<string, string>) => {
+  // Generic Update API Call
+  // Generic Update API Call
+  const updateProfile = async (data: Record<string, string>): Promise<boolean> => {
     try {
-      const res = await apiClient.patch("/profile/users/update", data, {
-        headers: {
-          "X-User-Id": persistedUser?.id || "",
-          "X-User-Email": persistedUser?.email || "",
-          // ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-      });
+      const res = await apiClient.patch("/profile/users/update", data);
+      const updatedUser = res.data.user || res.data; 
 
-      setUser(res.data);
-      // Synchronize Zustand AuthStore with the updated user data
-      setAuth(
-        {
-          ...persistedUser!,
-          ...data,
-          name: res.data.name || persistedUser?.name,
-        },
-        String(isAuthenticated),
-      );
+      setUser(updatedUser); 
+      const currentToken = useAuthStore.getState().accessToken;
+
+      setAuth({ ...persistedUser!, ...updatedUser }, currentToken!);
+
       toast.success("Profile updated successfully!");
       handleCancel();
+      return true; 
+      
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to update profile");
-      setOtpStep(
-        editingField === "email" || editingField === "phone" ? "sent" : "idle",
-      );
+      // 🔥 FIX 1: REMOVED console.error(error) SO NEXT.JS STOPS CRASHING THE SCREEN
+
+      // Extract the exact message from the backend safely
+      let errorMessage = "Failed to update profile";
+      if (error?.response?.data?.message) {
+        errorMessage = Array.isArray(error.response.data.message) 
+          ? error.response.data.message[0] 
+          : error.response.data.message;
+      } else if (typeof error?.message === "string") {
+        errorMessage = error.message;
+      }
+
+      // Show the toast smoothly
+      toast.error(errorMessage);
+      
+      // Leave input open to try a new email/phone
+      setOtpStep("idle"); 
+      return false; 
     }
   };
 
@@ -100,72 +131,87 @@ export function ProfileTab() {
       return toast.error("Please select a gender");
     }
 
-    setOtpStep("verifying"); // Re-using state to show loading spinner on Save button
+    // 🔥 FIX 2: Check without updating if value hasn't changed!
+    if (user && editValue.toLowerCase() === (user[editingField!] || "").toLowerCase()) {
+      toast.success("No changes made.");
+      handleCancel();
+      return;
+    }
+
+    setOtpStep("verifying"); 
     await updateProfile({ [editingField!]: editValue });
   };
 
   // Handlers for OTP Required Fields
   const handleSendOtp = async () => {
-    if (
-      editingField === "email" &&
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editValue)
-    ) {
+    if (editingField === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editValue)) {
       return toast.error("Enter a valid email address");
     }
     if (editingField === "phone" && !/^\d{10}$/.test(editValue)) {
       return toast.error("Enter a valid 10-digit phone number");
     }
 
+    // 🔥 FIX 3: Don't send OTP if the value is exactly the same as current
+    if (user && editValue === (user[editingField!] || "")) {
+      toast.success(`This is already your current ${editingField}.`);
+      handleCancel();
+      return;
+    }
+
     setOtpStep("sending");
     try {
-      await apiClient.post("/auth/send-otp", {
+      await apiClient.post("/notifications/send-otp", {
         identifier: editValue,
-        type: editingField === "email" ? "email" : "phone",
+        isEmail: editingField === "email", 
       });
       setOtpStep("sent");
       toast.success("OTP sent successfully!");
     } catch (error: any) {
       setOtpStep("idle");
-      toast.error(error.response?.data?.message || "Failed to send OTP");
+      // Safely extract string to prevent overlay
+      const msg = error.response?.data?.message || "Failed to send OTP";
+      toast.error(Array.isArray(msg) ? msg[0] : msg);
     }
   };
 
   const handleVerifyOtp = async () => {
+   
     if (otpValue.length !== 6) return toast.error("Enter a valid 6-digit OTP");
 
     setOtpStep("verifying");
     try {
-      // 1. Verify OTP - Backend returns { access_token, user }
-      const res = await apiClient.post("/auth/verify-otp", {
+      // 1. Verify OTP first
+      await apiClient.post("/notifications/verify-otp", {
         identifier: editValue,
         otp: otpValue,
       });
 
-      // 🔥 CRITICAL: Update the Global Auth Store with the NEW token immediately
-      // This ensures the next PATCH request uses the fresh token.
-      if (res.data?.access_token) {
-        useAuthStore.getState().setAuth(res.data.user, res.data.access_token);
-      }
-
-      // 2. Now perform the profile update with the fresh session
+      // 2. If OTP is good, update the profile.
       await updateProfile({ [editingField!]: editValue });
+
     } catch (error: any) {
-      setOtpStep("sent");
-      toast.error(error.response?.data?.message || "Invalid OTP");
+      // Safe error extraction to prevent overlay
+      let errorMessage = "Verification failed";
+      if (error?.response?.data?.message) {
+        errorMessage = Array.isArray(error.response.data.message) 
+          ? error.response.data.message[0] 
+          : error.response.data.message;
+      }
+      
+
+      toast.error(errorMessage);
+
+      if (errorMessage.toLowerCase().includes("otp")) {
+        setOtpStep("sent"); // Keep the OTP input open
+      } else {
+        setOtpStep("idle"); // Reset
+      }
     }
   };
 
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <Skeleton className="h-8 w-48 mb-6" />
-        <div className="space-y-4 max-w-2xl mt-8">
-          <Skeleton className="h-24 w-full" />
-          <Skeleton className="h-24 w-full" />
-        </div>
-      </div>
-    );
-  }
+
+
+ 
 
   // --- Inline Row Render Engine ---
   const renderRow = (
@@ -194,39 +240,44 @@ export function ProfileTab() {
           )}
         </div>
 
-        {/* Display State */}
         {!isEditing ? (
           <p className="text-gray-900 font-medium text-base mt-1">
-            {currentValue || (
-              <span className="text-gray-400 italic font-normal">
-                Not added
-              </span>
-            )}
+            {/* Formats MALE to Male, etc. */}
+            {field === "gender" && currentValue
+              ? currentValue.charAt(0) + currentValue.slice(1).toLowerCase()
+              : currentValue || (
+                  <span className="text-gray-400 italic font-normal">
+                    Not added
+                  </span>
+                )}
           </p>
         ) : (
-          /* Edit State (Flipkart Inline Expansion) */
           <div className="mt-3 animate-in fade-in slide-in-from-top-1 duration-300">
-            {/* 1. The Input Field */}
             {field === "gender" ? (
               <div className="flex items-center gap-6 mt-2">
-                {["Male", "Female", "Other"].map((g) => (
-                  <label
-                    key={g}
-                    className="flex items-center gap-2 cursor-pointer group"
-                  >
-                    <input
-                      type="radio"
-                      name="gender"
-                      value={g}
-                      checked={editValue === g}
-                      onChange={(e) => setEditValue(e.target.value)}
-                      className="w-4 h-4 text-[#009688] border-gray-300 focus:ring-[#009688]"
-                    />
-                    <span className="text-gray-700 font-medium group-hover:text-gray-900">
-                      {g}
-                    </span>
-                  </label>
-                ))}
+                {["Male", "Female", "Other"].map((g) => {
+                  const upperG = g.toUpperCase();
+                  const safeEditValue = (editValue || "").toUpperCase();
+
+                  return (
+                    <label
+                      key={g}
+                      className="flex items-center gap-2 cursor-pointer group"
+                    >
+                      <input
+                        type="radio"
+                        name="gender"
+                        value={upperG}
+                        checked={safeEditValue === upperG}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        className="w-4 h-4 text-[#009688] border-gray-300 focus:ring-[#009688]"
+                      />
+                      <span className="text-gray-700 font-medium group-hover:text-gray-900">
+                        {g}
+                      </span>
+                    </label>
+                  );
+                })}
               </div>
             ) : (
               <input
@@ -250,9 +301,7 @@ export function ProfileTab() {
               />
             )}
 
-            {/* 2. Dynamic Action Buttons */}
             <div className="mt-4 flex items-center gap-3">
-              {/* Name & Gender Flow */}
               {field === "name" || field === "gender" ? (
                 <>
                   <button
@@ -275,7 +324,6 @@ export function ProfileTab() {
                   </button>
                 </>
               ) : (
-                /* Email & Phone Flow (OTP Required) */
                 <div className="w-full max-w-md flex flex-col gap-3">
                   {otpStep === "idle" && (
                     <div className="flex gap-3">
@@ -342,7 +390,6 @@ export function ProfileTab() {
                     </div>
                   )}
 
-                  {/* Inline OTP Helper Text */}
                   {(otpStep === "sent" || otpStep === "verifying") && (
                     <p className="text-xs text-green-600 font-semibold flex items-center gap-1.5 animate-in fade-in">
                       <Check size={14} /> OTP sent to your new{" "}
@@ -376,6 +423,8 @@ export function ProfileTab() {
             Personal Information
           </h3>
         </div>
+
+        {/* ✅ CORRECTED: Restored Name and Gender rows here */}
         {renderRow("Full Name", "name", user?.name || "")}
         {renderRow("Gender", "gender", user?.gender || "")}
 
@@ -388,6 +437,8 @@ export function ProfileTab() {
             </span>
           </h3>
         </div>
+
+        {/* ✅ CORRECTED: Proper mapping for Email and Phone */}
         {renderRow("Email Address", "email", user?.email || "", "email")}
         {renderRow("Mobile Number", "phone", user?.phone || "", "tel")}
       </div>

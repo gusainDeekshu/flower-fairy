@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import { Heart, ShoppingBag, Trash2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -20,10 +20,16 @@ export function WishlistTab() {
 
   const fetchWishlist = useCallback(async () => {
     try {
-     const res = await apiClient.get<WishlistItem[]>('/api/v1/wishlist');
-setItems(res || []);
+      const res = await apiClient.get<WishlistItem[]>('/profile/wishlist');
+      
+      // 🔥 FIX: Standardize the extraction regardless of interceptor behavior
+      const data = Array.isArray(res) ? res : (res as any)?.data || [];
+      
+      setItems(data);
     } catch (error) {
+      console.error("Wishlist Fetch Error:", error);
       toast.error('Failed to load wishlist');
+      setItems([]); // Always fallback to array on error
     } finally {
       setLoading(false);
     }
@@ -37,7 +43,7 @@ setItems(res || []);
     setProcessingId(productId);
     try {
       // Toggle logic handles removal when passing existing productId
-      await apiClient.post(`/api/v1/wishlist/${productId}`);
+      await apiClient.post(`/profile/wishlist/${productId}`);
       toast.success('Removed from wishlist');
       fetchWishlist();
     } catch (error) {
@@ -57,7 +63,7 @@ setItems(res || []);
         quantity: 1 
       });
       // Remove from wishlist after moving to cart
-      await apiClient.post(`/api/v1/wishlist/${item.product.id}`);
+      await apiClient.post(`/profile/wishlist/${item.product.id}`);
       toast.success('Moved to cart!');
       fetchWishlist();
     } catch (error) {
