@@ -5,12 +5,16 @@ export const paymentService = {
   /**
    * Initialize a payment session/intent with the backend
    */
-  async initiatePayment(orderId: string, paymentMethod: string) {
+  async initiatePayment(sessionId: string, preferredProvider?: string) {
     try {
-      const response = await apiClient.post("/payments/initiate", {
-        orderId,
-        provider: paymentMethod, // e.g., 'razorpay', 'stripe', 'phonepe'
-      });
+      // 🔥 Changed orderId to sessionId to match the backend controller
+      const payload: { sessionId: string; provider?: string } = { sessionId };
+
+      if (preferredProvider) {
+        payload.provider = preferredProvider;
+      }
+
+      const response = await apiClient.post("/payments/initiate", payload);
       return response;
     } catch (error) {
       console.error("Payment Initiation Error:", error);
@@ -23,14 +27,17 @@ export const paymentService = {
    */
   async verifyPayment(verificationData: any) {
     try {
-      const response = await apiClient.post("/payments/verify", verificationData);
+      const response = await apiClient.post(
+        "/payments/verify",
+        verificationData,
+      );
       return response;
     } catch (error) {
       console.error("Payment Verification Error:", error);
       throw error;
     }
   },
-  
+
   /**
    * Get payment status for a specific order
    */
@@ -42,5 +49,5 @@ export const paymentService = {
       console.error("Fetch Payment Status Error:", error);
       throw error;
     }
-  }
+  },
 };

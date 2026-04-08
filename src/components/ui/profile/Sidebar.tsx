@@ -15,7 +15,7 @@ export function Sidebar({ activeTab, setActiveTab, onLogout }: SidebarProps) {
     { id: 'addresses', label: 'Manage Addresses', icon: MapPin },
     { id: 'orders', label: 'My Orders', icon: Package },
     { id: 'wishlist', label: 'Wishlist', icon: Heart },
-    { id: 'reviews', label: 'My Reviews', icon: Star },
+    // { id: 'reviews', label: 'My Reviews', icon: Star },
   ];
 
   return (

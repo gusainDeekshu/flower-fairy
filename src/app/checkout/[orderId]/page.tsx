@@ -20,7 +20,7 @@ export default function CheckoutProcess({ params }: { params: Promise<{ orderId:
       try {
         console.log(`Initiating payment for Order: ${orderId}`); 
         
-        const responseData = await paymentService.initiatePayment(orderId, "PAYU");
+        const responseData = await paymentService.initiatePayment(orderId);
         
         if (!isMounted) return;
 
