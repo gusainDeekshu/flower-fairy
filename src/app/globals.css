@@ -35,3 +35,14 @@
   body { @apply bg-background text-foreground; }
   .serif-font { font-family: 'Georgia', serif; }
 }
+
+/* Add this anywhere in globals.css */
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

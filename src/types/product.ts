@@ -1,10 +1,28 @@
 export interface APlusBlock {
-  type: 'banner' | 'split';
-  imageUrl: string;
+  type: 'banner' | 'split' | 'image_grid'; // Added grid for WOW style callouts
+  imageUrl?: string;
+  images?: string[]; // For grids
   title?: string;
   text?: string;
   align?: 'left' | 'right';
+  link?: string;
 }
+
+export interface HomepageConfig {
+  sectionsOrder: Array<{
+    id: string;
+    type: 'HERO' | 'CATEGORIES' | 'FEATURED_PRODUCTS' | 'BUNDLE_BUILDER' | 'TRUST_BADGES';
+    settings: any;
+  }>;
+}
+
+export interface ProductVariant {
+  id: string;
+  name: string;
+  priceModifier: number;
+  stock: number;
+}
+
 
 export interface ProductExtra {
   safetyInfo?: string;
@@ -27,8 +45,9 @@ export interface Product {
   images: string[];
   category: string;
   attributes: Record<string, string>;
-  variants: Array<{ id: string; name: string; value: string }>;
+  // variants: Array<{ id: string; name: string; value: string }>;
   careInstructions: string[];
   deliveryInfo: string[];
   extra: ProductExtra;
+  variants: ProductVariant[];
 }
