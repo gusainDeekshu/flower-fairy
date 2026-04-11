@@ -2,9 +2,11 @@ import { headers } from "next/headers";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { getQueryClient } from "@/lib/getQueryClient";
 
-// 🔥 The ONLY import you need now for the homepage layout!
 import HomeRenderer from "@/components/home/HomeRenderer";
 import { apiClient } from "@/lib/api-client";
+
+// 🔥 1. Import the new Blog Section
+import HomeBlogSection from "@/components/home/HomeBlogSection";
 
 export const revalidate = 600;
 
@@ -19,9 +21,7 @@ export default async function Home() {
     "localhost";
 
   // 2. Fetch the Aggregated Homepage Data from NestJS
-  // Note: We use fetchQuery instead of prefetchQuery so we can extract the config immediately
   const homeData = await queryClient.fetchQuery({
-  
     queryKey: ["home-data", domain],
     queryFn: async () => {
       try {
@@ -30,15 +30,12 @@ export default async function Home() {
           backendUrl = `http://localhost:4000${backendUrl}`;
         }
 
-        // 🔥 Using Axios (apiClient) instead of native fetch
         const response = await apiClient.get(`/admin/stores/home`, {
           headers: {
-            "x-tenant-domain": domain, // Tells the backend which store's themeConfig to load
+            "x-tenant-domain": domain, 
           },
         });
         console.log("[SSR] Fetched homepage data for domain:", domain, response.data);
-        // Axios automatically parses JSON and stores it in the `data` property.
-        // It also automatically throws on 4xx/5xx responses, so we don't need `if (!res.ok)`.
         return response.data;
       } catch (error) {
         console.error("[SSR] Failed to fetch homepage aggregator data:", error);
@@ -61,15 +58,20 @@ export default async function Home() {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <main className="min-h-screen bg-white">
-        {/* 🔥 ALL HARDCODED SECTIONS ARE GONE! 🔥
-          The HomeRenderer now loops through `homeData.config.sectionsOrder` 
-          and renders the exact components your Admin Panel dictates.
-        */}
+      <main className="min-h-screen bg-white pb-10">
+        
+        {/* Dynamic CMS Sections controlled by Admin */}
         <HomeRenderer 
           config={homeData.config} 
           data={homeData.data} 
         />
+
+        {/* 🔥 2. Add the Blog Section here! 
+            By placing it after HomeRenderer, it will always reliably show up 
+            near the bottom of the page, acting as a great pre-footer SEO section. 
+        */}
+        <HomeBlogSection />
+
       </main>
     </HydrationBoundary>
   );
