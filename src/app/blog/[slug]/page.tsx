@@ -66,8 +66,8 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
       <div className="max-w-5xl mx-auto px-4 mb-12">
         <div className="relative w-full aspect-video md:aspect-[21/9] rounded-2xl overflow-hidden shadow-lg">
           <Image 
-            src={blog.coverImage} 
-            alt={blog.title} 
+            src={blog.coverImage || "/images/placeholder.jpg"} 
+            alt={blog.title || "Blog cover image"} 
             fill 
             className="object-cover"
             priority

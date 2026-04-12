@@ -1,3 +1,9 @@
+import { BundleBuilder } from "./BundleBuilder";
+import CategoryTabs from "./CategoryTabs";
+import { HeroBanner } from "./HeroAndCategories";
+import { ProductGrid } from "./ProductGrid";
+import TrustBadges from "./TrustBadges";
+
 // src/components/home/SectionRenderer.tsx
 const COMPONENTS: any = {
   HERO: HeroBanner,

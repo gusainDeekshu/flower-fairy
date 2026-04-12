@@ -12,7 +12,7 @@ export default function APlusContent({ blocks }: { blocks: APlusBlock[] }) {
             <div key={index} className="relative w-full rounded-xl overflow-hidden bg-gray-100">
               <div className="relative w-full aspect-[21/9]">
                 <Image
-                  src={block.imageUrl}
+                  src={block.imageUrl || "/placeholder-image.jpg"}
                   alt={block.title || "Product banner"}
                   fill
                   className="object-cover"
@@ -36,7 +36,7 @@ export default function APlusContent({ blocks }: { blocks: APlusBlock[] }) {
             <div key={index} className={`flex flex-col ${isRight ? 'md:flex-row-reverse' : 'md:flex-row'} gap-8 md:gap-12 items-center`}>
               <div className="w-full md:w-1/2 relative aspect-square rounded-xl overflow-hidden bg-gray-50 shadow-sm">
                 <Image
-                  src={block.imageUrl}
+                  src={block.imageUrl || "/placeholder-image.jpg"}
                   alt={block.title || "Product feature"}
                   fill
                   className="object-cover"
