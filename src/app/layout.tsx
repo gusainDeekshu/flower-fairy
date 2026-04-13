@@ -10,7 +10,7 @@ import { AuthProvider } from "@/components/providers/AuthProvider";
 import MegaMenu from "@/components/layout/MegaMenu";
 
 export const metadata: Metadata = {
-  title: "AE Naturals | Premium Gifts",
+  title: "Flower Fairy | Premium Gifts",
   description: "Fresh flowers and cakes delivered same day.",
 };
 
