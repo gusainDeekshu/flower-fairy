@@ -1,18 +1,19 @@
 // src/services/menu.service.ts
-import { apiClient } from '@/lib/api-client';
+import {apiClient} from "@/lib/api-client";
 
 export interface MenuItem {
   id: string;
   label: string;
   slug: string;
-  type: string;
+  type: 'COLLECTION' | 'EXTERNAL';
+  referenceId?: string | null;
 }
 
 export interface MenuGroup {
   id: string;
   title: string;
-  image?: string;
-  link?: string;
+  image?: string | null;
+  link?: string | null;
   items: MenuItem[];
 }
 
@@ -24,19 +25,35 @@ export interface MenuData {
 }
 
 export const menuService = {
-  async getMegaMenu(slug: string): Promise<MenuData | null> {
+  /**
+   * Fetches the Mega Menu data using the shared apiClient.
+   * This uses the 'default-store' logic to ensure multi-tenant compatibility.
+   */
+  async getMegaMenu(slug: string = 'main-menu'): Promise<MenuData | null> {
     try {
-      // If your apiClient interceptor already injects x-store-id, you don't need the headers object here.
-      // I've included it just in case it's needed for server-side calls where localStorage/cookies might not auto-attach.
-      const { data } = await apiClient.get(`/menus/${slug}`, {
+      // Using apiClient instead of native fetch to leverage global interceptors
+      const response = await apiClient.get(`/menus/${slug}`, {
         headers: {
-          'x-store-id': process.env.NEXT_PUBLIC_STORE_ID as string,
+          // Explicitly using 'default-store' as requested for resolution
+          'x-store-id': 'default-store',
         }
       });
+
+      // Your apiClient interceptor already returns response.data
+      // We handle potential wrapping based on your observed API behavior
+      const data = response as any;
       
-      return data;
+      if (!data) return null;
+
+      // Ensure we return the object that contains the groups array
+      return {
+        id: data.id,
+        name: data.name,
+        slug: data.slug,
+        groups: data.groups || []
+      };
     } catch (error) {
-      console.error(`Failed to fetch mega menu (${slug}):`, error);
+      console.error("MegaMenu fetch error:", error);
       return null;
     }
   }
