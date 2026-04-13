@@ -1,411 +1,132 @@
 
 # 🌸 Flower Fairy Frontend
 
-A **production-ready, high-performance e-commerce storefront** built with **Next.js 15**, **TypeScript**, and **Tailwind CSS**.
-The application is designed to deliver a **fast, scalable, and SEO-optimized shopping experience** for premium gifting products such as flowers, cakes, and personalized items.
-
-It leverages modern frontend architecture patterns including:
-
-* Server Components for performance
-* Client Components for interactivity
-* State persistence
-* Secure OTP authentication
-* Advanced cart synchronization logic
+AE Naturals is a production-grade, high-performance e-commerce platform built with a **Next.js 15 (App Router)** frontend and a **NestJS** backend. Designed for scalability, it supports multi-tenant architecture, complex product enrichment (A+ Content), secure passwordless authentication, and a dynamic 3rd-party provider registry.
 
 🔗 **Live Demo:** [https://flower-fairy-murex.vercel.app](https://flower-fairy-murex.vercel.app)
-🖥️ **Frontend Repository:** [https://github.com/gusainDeekshu/flower-fairy](https://github.com/gusainDeekshu/flower-fairy)
 
 ---
 
-# 🎯 Project Goals
+## 📖 System Overview
 
-This project was built to achieve the following:
-
-• Deliver **blazing fast page loads** with optimized rendering
-• Maintain **secure and persistent authentication** without passwords
-• Provide **smooth cart experience across guest and logged-in sessions**
-• Enable **scalable multi-brand storefront support**
-• Ensure **robust error handling and session stability**
+The platform is split into distinct, specialized applications communicating via a REST API:
+1. **The Storefront (Frontend):** A highly optimized, SEO-friendly Next.js application tailored for premium shopping experiences.
+2. **The Core API (Backend):** A robust NestJS monolith handling complex business logic, inventory safety, and background processing.
+*(Note: The Admin Dashboard documentation is pending step 3).*
 
 ---
 
-# ✨ Core Features
+## ✨ Features
 
-## ⚡ Next.js 15 App Router Architecture
+### 🛒 The Storefront (Frontend)
+* **Blazing Fast UI:** Next.js Server Components mixed with Client Components for optimal performance and SEO.
+* **Intelligent Cart Syncing:** Zustand-powered guest carts that seamlessly merge with the database upon user login, preventing data loss.
+* **Dynamic A+ Content:** An Amazon-style product detail page that dynamically renders rich JSON content blocks (Banners, Grids, Split Text).
+* **Resilient Authentication:** Passwordless OTP flow. If an access token expires, Axios interceptors seamlessly use a secure `HttpOnly` refresh cookie to restore the session without user interruption.
+* **Mobile-First Design:** Fully responsive UI built with Tailwind CSS and Shadcn UI.
 
-The application uses the **Next.js App Router** which introduces a more powerful routing and rendering system.
-
-Key benefits:
-
-• Server Components improve SEO and reduce client bundle size
-• Streaming UI for faster perceived performance
-• Layout-based architecture for scalable UI composition
-• Built-in support for API routes and middleware
-
-This ensures:
-
-• Faster page rendering
-• Better search engine indexing
-• Reduced client-side JavaScript
+### ⚙️ The Core Engine (Backend)
+* **Multi-Tenant Architecture:** Host multiple brands/stores on a single database with isolated data.
+* **Dynamic Provider Factory:** Hot-swap payment gateways (Stripe, Razorpay, PhonePe) and SMS/Email providers via database configurations—no redeploys needed.
+* **Real-Time Inventory Safety:** BullMQ and Redis work together to reserve stock during checkout and automatically release it if the payment fails or times out.
+* **Logistics Integration:** Shiprocket integration for AWB generation and order tracking.
 
 ---
 
-## 🔑 Persistent OTP Authentication System
+## 🛠 Technology Stack
 
-Instead of traditional password login, the system uses a **secure OTP-based authentication flow**.
+### Frontend (Storefront)
+| Technology | Purpose |
+| :--- | :--- |
+| **Next.js 15 (App Router)** | Framework & Server Rendering |
+| **TypeScript** | Type Safety |
+| **Tailwind CSS & Shadcn UI** | Styling & UI Components |
+| **Zustand** | Synchronous State (Cart/Auth) & Local Storage |
+| **TanStack Query** | Asynchronous Server State & Caching |
+| **Axios** | HTTP Client with automated token refresh |
 
-### How It Works
-
-1. User enters phone/email.
-2. Backend sends OTP.
-3. OTP verification generates:
-
-   * Access Token
-   * Refresh Token (stored in HttpOnly cookie)
-4. On page refresh:
-
-   * Frontend automatically restores the session.
-
-### Authentication Architecture
-
-AuthProvider handles:
-
-• Session restoration
-• Login state
-• User data hydration
-• Silent token refresh
-
-This prevents:
-
-• Unexpected logouts
-• Broken sessions
-• Authentication delays
+### Backend (Core API)
+| Technology | Purpose |
+| :--- | :--- |
+| **NestJS** | Framework Architecture |
+| **PostgreSQL & Prisma** | Relational Database & ORM |
+| **Redis** | High-performance caching (`cache-manager`) |
+| **BullMQ** | Background job queues |
+| **Cloudinary** | Media optimization and delivery |
 
 ---
 
-## 🛒 Intelligent Shopping Cart System
+## 📂 Architecture & Folder Structure
 
-The cart is powered by **Zustand state management** with local persistence.
-
-### Key Capabilities
-
-Guest Cart Support
-Users can add products before login.
-
-Cart Persistence
-Cart is saved in localStorage to prevent loss on refresh.
-
-Guest-to-User Cart Merge
-When a user logs in:
-
-1. Local cart items are detected
-2. API sync pushes them to database
-3. Server cart is merged automatically
-
-This ensures:
-
-• No lost items
-• Seamless user experience
-• Cross-device consistency
-
----
-
-## 🔄 Server State Management with TanStack Query
-
-The application uses **TanStack Query** to manage API-driven state.
-
-Benefits:
-
-• Smart caching
-• Background refetching
-• Optimistic updates
-• Reduced API calls
-• Better performance
-
-This is especially useful for:
-
-• Product listings
-• Cart updates
-• Order history
-• User profile data
-
----
-
-## 🛡️ Advanced Error Handling System
-
-The app uses **centralized Axios interceptors** located in:
-
-```
-lib/api-client.ts
-```
-
-This system automatically handles:
-
-### 401 Unauthorized
-
-Token expired → refresh token used → retry request
-
-### 500 Server Errors
-
-Graceful failure UI + logging
-
-### Network Failures
-
-Retry-safe architecture
-
-This results in:
-
-• Fewer user disruptions
-• Stable authentication flows
-• Consistent API behavior
-
----
-
-## 🎨 Dynamic Branding (Multi-Tenant Ready)
-
-The system includes a **brand configuration layer** that allows multiple store identities.
-
-Located in:
-
-```
-config/
-```
-
-This enables:
-
-• Multiple storefronts using same codebase
-• Custom themes
-• Brand color overrides
-• Logo and UI variation
-
-Useful for:
-
-• Marketplace platforms
-• Franchise stores
-• White-label deployments
-
----
-
-## 📱 Mobile-First UI System
-
-The UI is designed with **mobile-first responsiveness** using:
-
-• Tailwind CSS
-• Shadcn UI
-• Lucide Icons
-
-Design principles used:
-
-• Component-based layout
-• Accessible UI
-• Adaptive grids
-• Performance optimized animations
-
-Result:
-
-• Works perfectly across devices
-• Fast UI rendering
-• Clean and modern UX
-
----
-
-# 🛠️ Technology Stack
-
-| Layer            | Technology     |
-| ---------------- | -------------- |
-| Framework        | Next.js 15     |
-| Language         | TypeScript     |
-| Styling          | Tailwind CSS   |
-| UI System        | Shadcn UI      |
-| Icons            | Lucide         |
-| State Management | Zustand        |
-| Server State     | TanStack Query |
-| HTTP Client      | Axios          |
-| Authentication   | JWT + OTP      |
-| Validation       | Zod            |
-| Notifications    | Sonner         |
-
----
-
-# 📂 Detailed Folder Structure
-
+### Frontend (`ae-naturals/src/`)
 ```text
-src/
-├── app/            # Pages, Layouts, and dynamic API routes
-├── components/     # Feature-based components
-│   ├── auth/       # OTP Modal with auto-sync logic
-│   ├── home/       # Hero sections and Product Showcase
-│   ├── product/    # Product details and AddToCart logic
-│   ├── providers/  # Global Auth and Query providers
-│   └── ui/         # Atomic Shadcn primitives
-├── hooks/          # Custom hooks for catalog and auth initialization
-├── lib/            # Axios instance and session recovery logic
-├── services/       # API abstraction layer (Cart, Product, Orders)
-├── store/          # Zustand stores for Cart and Auth state
-└── config/         # Multi-tenant brand settings
+├── app/            # Next.js App Router (Pages: Home, Product, Cart, Checkout, Profile)
+├── components/     # Reusable UI elements
+│   ├── home/       # Modular landing page sections
+│   ├── product/    # Product details, Gallery, and A+ Content Renderer
+│   ├── ui/         # Shadcn atomic components
+├── hooks/          # Complex logic abstraction (useCartActions, useAuthInit)
+├── lib/            # Utilities and Axios API client with interceptors
+├── services/       # API abstraction layer (Cart, Product, Auth)
+├── store/          # Zustand global state (Cart, Auth)
+└── types/          # TypeScript interfaces matching backend DTOs
+```
+
+### Backend (`ae-naturals-backend/src/`)
+```text
+├── auth/           # OTP flows and JWT strategies
+├── cart/           # Cart persistence and real-time price snapshots
+├── inventory/      # BullMQ/CRON workers for stock management
+├── orders/         # Order lifecycles and webhook processors
+├── providers/      # Factory pattern for dynamic Email/SMS/Payment integrations
+└── products/       # Catalog APIs and A+ Content logic
 ```
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Installation & Getting Started
 
 ### 1. Prerequisites
-* **Node.js** (v20+ recommended)
-* **pnpm** (preferred) or **npm**
-* A running instance of the [Flower Fairy Backend](https://github.com/gusainDeekshu/flower-fairy-backend)
+* Node.js (v18+)
+* PostgreSQL instance & Redis server (for Backend)
 
----
-
-## 2. Clone the Repository
-
+### 2. Backend Setup
 ```bash
-git clone https://github.com/gusainDeekshu/flower-fairy.git
-cd flower-fairy
-```
-
----
-
-## 3. Install Dependencies
-
-```bash
+git clone [https://github.com/aenaturalsit-dotcom/ae-naturals-backend.git](https://github.com/aenaturalsit-dotcom/ae-naturals-backend.git)
+cd ae-naturals-backend
 npm install
+npx prisma generate
+npx prisma migrate dev
+npm run start:dev
+# Runs on http://localhost:4000
 ```
 
-or
-
+### 3. Frontend Setup
 ```bash
-pnpm install
-```
+git clone [https://github.com/gusainDeekshu/ae-naturals.git](https://github.com/gusainDeekshu/ae-naturals.git)
+cd ae-naturals
+npm install
 
----
+# Create .env.local
+echo "NEXT_PUBLIC_API_URL=http://localhost:4000/api/v1" > .env.local
 
-## 4. Environment Configuration
-
-Create:
-
-```
-.env.local
-```
-
-Add:
-
-```env
-NEXT_PUBLIC_API_URL=http://localhost:4000/api/v1
-```
-
-This connects the frontend to the backend API.
-
----
-
-## 5. Run the Development Server
-
-```bash
 npm run dev
-```
-
-The app will run at:
-
-```
-http://localhost:3000
+# Runs on http://localhost:3000
 ```
 
 ---
 
-# 🔄 Core Workflow: Session & Cart Synchronization
-
-This is one of the most important features of the application.
-
-### Step 1 — Session Recovery
-
-On page load:
-
-```
-AuthProvider → /auth/me
-```
-
-If access token expired:
-
-```
-refresh_token cookie → generate new token
-```
-
-User stays logged in without interruption.
+## 🔐 Security & Data Flow
+1. **Authentication:** Users request an OTP. The backend validates it and issues a short-lived JWT Access Token (memory) and a long-lived Refresh Token (`HttpOnly` cookie).
+2. **API Requests:** The frontend attaches the Access Token. If it receives a `401`, the Axios interceptor halts the queue, calls the `/auth/refresh` endpoint using the cookie, updates the token, and replays the original request invisibly to the user.
+3. **Data Protection:** All sensitive backend provider keys (Stripe, Twilio) are AES-256 encrypted at rest.
 
 ---
 
-### Step 2 — Cart Synchronization
+## 👨‍💻 Author
+**Deekshant Gusain**
+* GitHub: [@gusainDeekshu](https://github.com/gusainDeekshu)
+* Portfolio: [Deekshant Gusain](https://deekshantportfoliosite.netlify.app)
 
-Scenario:
-
-Guest adds items → then logs in.
-
-Flow:
-
-1 Local cart detected
-2 syncCart triggered
-3 Backend cart merged
-4 Local cart cleared
-
-Outcome:
-
-No cart data loss.
-
----
-
-### Step 3 — Error Recovery
-
-Axios interceptors automatically:
-
-• detect expired tokens
-• retry requests
-• maintain stable API communication
-
----
-
-# 🔐 Security Design
-
-The system follows modern web security practices.
-
-Access tokens stored in memory
-Refresh tokens stored in HttpOnly cookies
-OTP authentication reduces credential leaks
-Zod schema validation protects API inputs
-
----
-
-# 📈 Performance Optimizations
-
-Several techniques were used:
-
-Server Components reduce bundle size
-TanStack Query caching reduces network calls
-Lazy loading of UI sections
-Optimized image loading
-Turbopack dev performance boost
-
----
-
-# 👨‍💻 Author
-
-Deekshant Gusain
-
-GitHub
-[https://github.com/gusainDeekshu](https://github.com/gusainDeekshu)
-
-Portfolio
-[https://deekshantportfoliosite.netlify.app](https://deekshantportfoliosite.netlify.app)
-
----
-
-# 📄 License
-
+## 📄 License
 This project is licensed under the **MIT License**.
-
-You are free to:
-
-• Use
-• Modify
-• Distribute
-• Build commercial projects
-
-****************************************************************************************************************************************************************
