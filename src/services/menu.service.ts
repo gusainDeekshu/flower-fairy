@@ -1,11 +1,11 @@
 // src/services/menu.service.ts
-import {apiClient} from "@/lib/api-client";
+import { apiClient } from "@/lib/api-client";
 
 export interface MenuItem {
   id: string;
   label: string;
   slug: string;
-  type: 'COLLECTION' | 'EXTERNAL';
+  type: "COLLECTION" | "EXTERNAL";
   referenceId?: string | null;
 }
 
@@ -29,32 +29,27 @@ export const menuService = {
    * Fetches the Mega Menu data using the shared apiClient.
    * This uses the 'default-store' logic to ensure multi-tenant compatibility.
    */
-  async getMegaMenu(slug: string = 'main-menu'): Promise<MenuData | null> {
+  async getMegaMenu(slug: string = "main-menu"): Promise<MenuData | null> {
     try {
       // Using apiClient instead of native fetch to leverage global interceptors
-      const response = await apiClient.get(`/menus/${slug}`, {
-        headers: {
-          // Explicitly using 'default-store' as requested for resolution
-          'x-store-id': 'default-store',
-        }
-      });
+      const response = await apiClient.get(`/menus/${slug}`);
 
+      const rawData = response.data || response;
       // Your apiClient interceptor already returns response.data
       // We handle potential wrapping based on your observed API behavior
-      const data = response as any;
-      
-      if (!data) return null;
+      console.log("Raw payload from Backend:", rawData);
 
-      // Ensure we return the object that contains the groups array
+      if (!rawData) return null;
       return {
-        id: data.id,
-        name: data.name,
-        slug: data.slug,
-        groups: data.groups || []
+        id: rawData.id,
+        name: rawData.name,
+        slug: rawData.slug,
+        // Ensure we are grabbing groups from the correct level
+        groups: rawData.groups || [],
       };
     } catch (error) {
       console.error("MegaMenu fetch error:", error);
       return null;
     }
-  }
+  },
 };

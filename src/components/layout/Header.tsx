@@ -13,7 +13,12 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { OtpModal } from "@/components/auth/OtpModal";
 import { apiClient } from "@/lib/api-client";
 
-export function Header() {
+
+interface HeaderProps {
+  megaMenu?: React.ReactNode; // 🔥 Pass the MegaMenu as a pre-rendered node
+}
+
+export function Header({ megaMenu }: HeaderProps) {
   const [isLoginModalOpen, setLoginModalOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -186,15 +191,12 @@ export function Header() {
           </div>
         </div>
 
-        {/* 3. Desktop Navigation */}
-        <nav className="hidden lg:flex items-center justify-center gap-8 py-3 border-t text-sm font-semibold text-gray-700">
-          <Link href="/" className="hover:text-[#006044]">Home</Link>
-          <Link href="/shop" className="hover:text-[#006044]">Shop</Link>
-          <Link href="/flowers" className="hover:text-[#006044]">Flowers</Link>
-          <Link href="/cakes" className="hover:text-[#006044]">Cakes</Link>
-          <Link href="/gifts" className="hover:text-[#006044]">Gifts</Link>
-          <Link href="/blog" className="hover:text-[#006044]">Blog</Link>
-        </nav>
+       {/* 3. 🔥 MEGA MENU INTEGRATION */}
+        <div className="hidden lg:block border-t border-gray-50 bg-white">
+          <div className="mx-auto max-w-7xl px-4">
+            {megaMenu}
+          </div>
+        </div>
       </header>
 
       {/* Auth Modal Integration */}

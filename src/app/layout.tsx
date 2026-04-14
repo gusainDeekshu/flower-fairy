@@ -32,8 +32,8 @@ export default function RootLayout({
         <div className="flex flex-col min-h-screen">
           <QueryProvider>
             <AuthProvider>
-              <Header />
-              <MegaMenu />
+              <Header megaMenu={<MegaMenu />} />
+              
               {/* 🔥 FIX: Removed max-w-7xl and px-4 from here. 
                   Let the pages (children) handle their own width and padding! */}
               <main className="flex-1 flex flex-col w-full">
