@@ -19,7 +19,6 @@
     "react": "19.2.3",
     "react-confetti": "^6.4.0",
     "react-dom": "19.2.3",
-    "react-hot-toast": "^2.6.0",
     "react-use": "^17.6.0",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
