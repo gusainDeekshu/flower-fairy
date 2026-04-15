@@ -37,7 +37,6 @@ export const menuService = {
       const rawData = response.data || response;
       // Your apiClient interceptor already returns response.data
       // We handle potential wrapping based on your observed API behavior
-      console.log("Raw payload from Backend:", rawData);
 
       if (!rawData) return null;
       return {

@@ -44,11 +44,18 @@ export function OtpModal({
   const handleLoginSuccess = async (data: any) => {
     setAuth(data.user, data.access_token);
     toast.success("Welcome back!");
+    
+    // 🔥 FIX: Force a micro-task delay. 
+    // This guarantees useAuthStore has fully propagated the token 
+    // to your Axios interceptors before the cart API requests begin.
+    await new Promise(resolve => setTimeout(resolve, 50)); 
+
     try { 
       await syncCart(); 
     } catch (e) { 
       console.error("Cart sync failed:", e); 
     }
+    
     resetModal();
     onSuccess();
   };

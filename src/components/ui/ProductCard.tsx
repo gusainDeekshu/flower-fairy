@@ -1,11 +1,10 @@
-// src\components\ui\ProductCard.tsx
 "use client";
 
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Star, ShoppingCart } from "lucide-react";
-import { useAddToCart } from "@/hooks/useAddToCart";
+import { Star } from "lucide-react";
+import { AddToCartButton } from "@/components/product/AddToCartButton";
 
 interface ProductCardProps {
   product: {
@@ -18,12 +17,11 @@ interface ProductCardProps {
     rating?: number;
     reviewCount?: number;
     category?: { name: string } | string; 
+    stock?: number; // Added so stock can be passed to the button
   };
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const { handleAddToCart, isAdding } = useAddToCart();
-
   const discountPercent = product.oldPrice 
     ? Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)
     : 0;
@@ -91,21 +89,16 @@ export default function ProductCard({ product }: ProductCardProps) {
           )}
         </div>
 
-        {/* Add to Cart - Sticky bottom behavior on mobile, clean on desktop */}
-        <button
-          onClick={() => handleAddToCart(product)}
-          disabled={isAdding}
-          className="w-full flex items-center justify-center gap-2 bg-gray-900 hover:bg-[#006044] text-white py-3 rounded-xl font-bold text-sm tracking-wide transition-colors disabled:opacity-70 disabled:cursor-not-allowed group-hover:shadow-md"
-        >
-          {isAdding ? (
-            <span className="animate-pulse">ADDING TO CART...</span>
-          ) : (
-            <>
-              <ShoppingCart className="w-4 h-4" />
-              ADD TO CART
-            </>
-          )}
-        </button>
+        {/* Dynamic Add to Cart Button (Handles quantities and disabled states automatically) */}
+        <AddToCartButton 
+  product={{
+    id: product.id,
+    name: product.name,
+    price: product.price,
+    images: product.images
+  }}
+  stock={product.stock} 
+/>
       </div>
     </div>
   );

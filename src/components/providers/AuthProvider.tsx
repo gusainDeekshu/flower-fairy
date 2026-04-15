@@ -2,38 +2,37 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios"; // 🔥 IMPORT RAW AXIOS
+import axios from "axios"; 
 import { useAuthStore } from "@/store/useAuthStore";
 import { useCartStore } from "@/store/useCartStore";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { setAuth, logout, _hasHydrated } = useAuthStore();
-  const { fetchCart } = useCartStore();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const initAuth = async () => {
       try {
-        // 🔥 1. Use raw axios to bypass interceptors! 
-        // This quietly sends the HttpOnly cookie to the backend.
         const { data } = await axios.post(
           `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
           {},
-          { withCredentials: true } // Crucial: forces browser to send the cookie
+          { withCredentials: true } 
         );
 
-        // 🔥 2. Restore Auth State in Zustand
+        // 1. Restore Auth State
         setAuth(data.user, data.access_token);
         
-        // 🔥 3. Fetch the cart now that we are securely authenticated
+        // 🔥 FIX: ON PAGE REFRESH, ONLY FETCH! NEVER SYNC!
+        // Because Zustand persists the DB cart in local storage, calling syncCart 
+        // here would blindly send those saved items back to the backend, causing 
+        // the database quantities to double on every refresh.
+        const { fetchCart } = useCartStore.getState();
         await fetchCart(); 
 
       } catch (err) {
-        // If the cookie is missing or expired, gracefully become a guest
         console.warn("No active session. Remaining as guest.");
         logout();
       } finally {
-        // Stop the loading skeleton
         setLoading(false);
       }
     };
@@ -41,15 +40,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (_hasHydrated) {
       initAuth();
     }
-  }, [_hasHydrated, setAuth, logout, fetchCart]);
+  }, [_hasHydrated, setAuth, logout]);
 
   if (!_hasHydrated || loading) {
     return (
       <div className="p-6 space-y-6">
-        {/* Header skeleton */}
         <div className="h-6 w-40 bg-gray-200 rounded animate-pulse"></div>
-
-        {/* Cards skeleton */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[...Array(8)].map((_, i) => (
             <div key={i} className="space-y-3">

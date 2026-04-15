@@ -8,11 +8,14 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { BRAND } from "@/config/brand.config";
-import { useCartStore } from "@/store/useCartStore";
+
+// --- HOOKS & STORES ---
 import { useAuthStore } from "@/store/useAuthStore";
+import { useCartStore } from "@/store/useCartStore"; // 🔥 FIXED: Connected to Zustand
+
+// --- COMPONENTS & SERVICES ---
 import { OtpModal } from "@/components/auth/OtpModal";
 import { apiClient } from "@/lib/api-client";
-
 
 interface HeaderProps {
   megaMenu?: React.ReactNode; // 🔥 Pass the MegaMenu as a pre-rendered node
@@ -23,12 +26,15 @@ export function Header({ megaMenu }: HeaderProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   
-  // Zustand State
-  const cartItems = useCartStore((state) => state.items);
+  // Auth State
   const { user, logout } = useAuthStore();
   
-  // Calculate total items in cart
-  const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+  // 🔥 FIXED: Pull items from Zustand (Sees both guest local storage & DB items)
+  const items = useCartStore((s) => s.items);
+  const isLoading = useCartStore((s) => s.isLoading);
+  
+  // 🔥 FIXED: Calculate total items safely from the unified Zustand state
+  const cartCount = items.reduce((acc, item) => acc + item.quantity, 0);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -98,7 +104,8 @@ export function Header({ megaMenu }: HeaderProps) {
                </button>
                <Link href="/cart" className="relative">
                   <ShoppingCart size={22} className="text-gray-600" />
-                  {cartCount > 0 && (
+                  {/* 🔥 Connected Cart Badge */}
+                  {!isLoading && cartCount > 0 && (
                     <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
                       {cartCount}
                     </span>
@@ -182,7 +189,8 @@ export function Header({ megaMenu }: HeaderProps) {
             <Link href="/cart" className="flex items-center gap-2 text-gray-800 font-medium relative hover:text-[#006044] transition-colors">
               <ShoppingCart size={20} />
               <span>Cart</span>
-              {cartCount > 0 && (
+              {/* 🔥 Connected Cart Badge */}
+              {!isLoading && cartCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
                   {cartCount}
                 </span>

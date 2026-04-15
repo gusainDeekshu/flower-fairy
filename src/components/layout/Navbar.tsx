@@ -1,6 +1,14 @@
-import { Search, ShoppingCart, Phone, User } from 'lucide-react';
+"use client"; // 🔥 Added because we are using a store
+
+import { Search, ShoppingCart, Phone } from 'lucide-react';
+import { useCartStore } from "@/store/useCartStore"; // 🔥 Import Zustand
+import Link from 'next/link';
 
 export default function Navbar() {
+  // 🔥 Pull items from Zustand and calculate count
+  const items = useCartStore((s) => s.items);
+  const cartCount = items.reduce((acc, item) => acc + item.quantity, 0);
+
   return (
     <header className="w-full sticky top-0 z-50 bg-white">
       {/* 1️⃣ Top Utility Bar */}
@@ -31,10 +39,15 @@ export default function Navbar() {
               <a href="#">Cakes</a>
               <a href="#">Contact</a>
             </nav>
-            <div className="relative cursor-pointer">
+            {/* 🔥 Connected Link to /cart and dynamic count */}
+            <Link href="/cart" className="relative cursor-pointer">
               <ShoppingCart size={22} strokeWidth={2.5} />
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
-            </div>
+              {cartCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
           </div>
         </div>
       </div>

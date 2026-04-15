@@ -23,10 +23,27 @@ export const apiClient = axios.create({
 
 // Request Interceptor: Attach Access Token
 apiClient.interceptors.request.use((config) => {
+  // 1. Attach JWT Access Token if logged in
   const token = useAuthStore.getState().accessToken;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
+  // 2. Attach Guest Session ID (Crucial for the Cart API)
+  if (typeof window !== 'undefined') {
+    let sessionId = localStorage.getItem('guest_session_id');
+    
+    if (!sessionId) {
+      sessionId = typeof crypto !== 'undefined' && crypto.randomUUID 
+        ? crypto.randomUUID() 
+        : `guest_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      localStorage.setItem('guest_session_id', sessionId);
+    }
+    
+    // Add the header expected by the backend
+    config.headers['x-session-id'] = sessionId;
+  }
+
   return config;
 });
 
