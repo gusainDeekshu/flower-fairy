@@ -81,19 +81,17 @@ export const useCartStore = create<CartState>()(
           if (res && res.items) {
             const normalized = res.items.map((item: any) => ({
               productId: item.productId,
-              variantId: item.variantId,
-              name: item.variant?.name
-                ? `${item.product.name} - ${item.variant.name}`
-                : item.product.name,
-              price: item.priceSnapshot,
+              // 🔥 FIX: Normalize Prisma 'null' to frontend 'undefined'
+              variantId: item.variantId || undefined, 
+              name: item.variant?.name ? `${item.product.name} - ${item.variant.name}` : item.product.name,
+              price: item.priceSnapshot, 
               image: item.product.images?.[0] || "",
               quantity: item.quantity,
-              storeId: item.tenantId,
+              storeId: item.tenantId, 
             }));
-
-            // 🔥 This automatically replaces guest items with the merged DB items
-            set({ items: normalized });
-          } else if (
+            
+            set({ items: normalized });}
+             else if (
             res &&
             Array.isArray(res.items) &&
             res.items.length === 0

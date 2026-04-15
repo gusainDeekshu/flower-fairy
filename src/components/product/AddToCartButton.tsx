@@ -30,9 +30,11 @@ export const AddToCartButton: React.FC<AddToCartButtonProps> = ({
   // Local loading state to show spinners during Zustand's async actions
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Find if item already exists in the unified Zustand cart
+  // 🔥 FIX: Loose normalization guarantees it finds the item whether undefined or null
   const cartItem = items.find(
-    (item) => item.productId === product.id && item.variantId === variantId
+    (item) => 
+      item.productId === product.id && 
+      (item.variantId || undefined) === (variantId || undefined)
   );
 
   const currentQuantity = cartItem?.quantity || 0;

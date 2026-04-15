@@ -1,4 +1,4 @@
-// src\services\cart.service.ts
+// src/services/cart.service.ts
 
 import { apiClient } from "@/lib/api-client";
 import { AddToCartPayload } from "@/types/cart";
@@ -9,41 +9,25 @@ export const CartService = {
     return data;
   },
 
-  // Fixed: POST /cart (Removed /items to match REST standard)
+  // 🔥 FIXED: Matches Backend @Post('add')
   addToCart: async (payload: AddToCartPayload) => {
-    // ❌ OLD: await apiClient.post('/cart/add', payload);
-    // ✅ NEW: Use the correct REST endpoint
     const { data } = await apiClient.post("/cart/add", payload);
     return data;
   },
 
-  // Fixed: PATCH /cart/:productId
-  updateQuantity: async ({
-    productId,
-    quantity,
-    variantId,
-  }: {
-    productId: string;
-    quantity: number;
-    variantId?: string;
-  }) => {
-    const { data } = await apiClient.patch(`/cart/${productId}`, {
-      quantity,
-      variantId,
+  // 🔥 FIXED: Matches Backend @Patch(':productId')
+  updateQuantity: async (payload: { productId: string; quantity: number; variantId?: string }) => {
+    const { data } = await apiClient.patch(`/cart/${payload.productId}`, {
+      quantity: payload.quantity,
+      variantId: payload.variantId
     });
     return data;
   },
 
-  // Fixed: DELETE /cart/:productId
-  removeItem: async ({
-    productId,
-    variantId,
-  }: {
-    productId: string;
-    variantId?: string;
-  }) => {
-    const { data } = await apiClient.delete(`/cart/${productId}`, {
-      data: { variantId },
+  // 🔥 FIXED: Matches Backend @Delete(':productId')
+  removeItem: async (payload: { productId: string; variantId?: string }) => {
+    const { data } = await apiClient.delete(`/cart/${payload.productId}`, { 
+      data: { variantId: payload.variantId } 
     });
     return data;
   },
@@ -53,6 +37,7 @@ export const CartService = {
     return data;
   },
 
+  // Matches Backend @Post('merge')
   mergeCart: async (payload: { items: AddToCartPayload[] }) => {
     const { data } = await apiClient.post("/cart/merge", payload);
     return data;
