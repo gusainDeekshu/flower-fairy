@@ -1,3 +1,4 @@
+// src\app\checkout\page.tsx
 "use client";
 
 import { useCartStore } from "@/store/useCartStore";
@@ -24,7 +25,7 @@ export default function CheckoutPage() {
   const { items } = useCartStore();
   const router = useRouter();
   const searchParams = useSearchParams(); // 🔥 Add this
-// --- 🔥 NEW: Listen for Payment Redirect Errors ---
+  // --- 🔥 NEW: Listen for Payment Redirect Errors ---
   useEffect(() => {
     const errorParam = searchParams.get("error");
     const reasonParam = searchParams.get("reason");
@@ -34,7 +35,9 @@ export default function CheckoutPage() {
       if (errorParam === "payment_failed") {
         toast.error("Payment failed or was cancelled. Please try again.");
       } else if (errorParam === "hash_mismatch") {
-        toast.error(`Security validation failed: ${reasonParam || "Contact support"}`);
+        toast.error(
+          `Security validation failed: ${reasonParam || "Contact support"}`,
+        );
       } else {
         toast.error("An error occurred during checkout.");
       }
@@ -185,7 +188,7 @@ export default function CheckoutPage() {
     const isPincodeValid = /^[1-9][0-9]{5}$/.test(newAddress.pincode);
 
     if (!isPhoneValid) {
-      toast.error("Please enter a valid 10-digit mobile number");
+      toast.error("Invalid mobile number (must start with 6-9)");
       return;
     }
 
@@ -207,7 +210,12 @@ export default function CheckoutPage() {
       setShowAddAddressForm(false);
       toast.success("Address saved!");
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Failed to add address");
+      const msg =
+        error?.response?.data?.message?.[0] ||
+        error?.response?.data?.message ||
+        "Failed to add address";
+
+      toast.error(msg);
     }
   };
 
@@ -250,20 +258,20 @@ export default function CheckoutPage() {
     setIsProcessing(true);
 
     try {
-      toast.loading("Initializing secure payment...");
+     const toastId = toast.loading("Initializing secure payment...");
 
       // 1. Create CheckoutSession (NOT an Order)
       // This locks in the intent to pay but does not finalize anything in the DB
-      const sessionRes = await apiClient.post('/checkout/session', {
+      const sessionRes = await apiClient.post("/checkout/session", {
         storeId: currentStoreId,
         addressId: selectedAddress.id,
         shippingCost: shippingCost.toString(),
         courierId: selectedCourierId,
       });
-      
+
       const session = sessionRes.data;
 
-      // ❌ FATAL BUG REMOVED: Do NOT call clearCart() here anymore! 
+      // ❌ FATAL BUG REMOVED: Do NOT call clearCart() here anymore!
       // The cart remains intact until the webhook confirms success.
 
       // 2. Fetch the payment initiation data using the SESSION ID
@@ -271,12 +279,16 @@ export default function CheckoutPage() {
       const responseData: PaymentInitiateResponse = payRes?.data || payRes;
 
       console.log("BACKEND PAYLOAD:", responseData);
+// ✅ Dismiss loader BEFORE redirecting
+  toast.dismiss(toastId);
 
       // 3. Delegate routing (passing the session.id so the frontend tracks it)
       executePaymentFlow(responseData, session.id, router);
-      
     } catch (err: any) {
       console.error(err);
+      // ❌ ALWAYS dismiss loader on error
+      toast.dismiss();
+
       const msg =
         err?.response?.data?.message || err?.message || "Checkout failed";
       toast.error(msg);
