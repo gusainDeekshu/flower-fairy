@@ -1,6 +1,6 @@
 // src\config\brand.config.ts
 export const BRAND = {
-  name: "AE Naturals",
+  name: "Flower Fairy",
 
   phone: "+91 8553463261",
   whatsapp: "+91 8553463261",
