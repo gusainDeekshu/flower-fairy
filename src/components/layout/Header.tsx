@@ -87,14 +87,37 @@ export function Header({ megaMenu }: HeaderProps) {
         <div className="px-4 md:px-8 h-[76px] flex items-center justify-between max-w-[1600px] mx-auto">
           
           {/* LEFT: Logo */}
-          <div className="shrink-0 flex-[1_1_20%]">
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-10 h-10 bg-[#006044] rounded-full flex items-center justify-center text-white text-xl shadow-sm group-hover:scale-105 transition-transform">
-                🌸
-              </div>
-              <span className="text-xl sm:text-2xl font-bold text-gray-800 tracking-tight">
-                Flower Fairy
-              </span>
+          {/* LEFT: Logo Section (Premium & Prominent) */}
+          <div className="shrink-0 flex items-center lg:flex-[1_1_20%]">
+            <Link 
+              href="/" 
+              className="flex items-center gap-3 group outline-none rounded-xl focus-visible:ring-2 focus-visible:ring-[#006044]/40 p-1 -ml-1 transition-all"
+              aria-label={`${BRAND.name} Home`}
+            >
+              {BRAND.logo?.startsWith("http") || BRAND.logo?.startsWith("/") ? (
+                // 🌟 PRO IMAGE LOGO: Beautifully scaled with subtle hover physics
+                <div className="relative h-12 sm:h-14 md:h-[60px] flex items-center transition-transform duration-400 ease-out group-hover:scale-[1.04] group-active:scale-95 origin-left">
+                  <img 
+                    src={BRAND.logo} 
+                    alt={BRAND.name} 
+                    className="h-full w-auto object-contain drop-shadow-sm"
+                    loading="eager"
+                  />
+                </div>
+              ) : (
+                // 🌟 FALLBACK LOGO: Only shows if you switch back to an emoji/text in the config
+                <>
+                  <div 
+                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-white text-xl sm:text-2xl shadow-md shadow-[#006044]/20 transition-transform duration-400 ease-out group-hover:scale-[1.06] group-active:scale-95 shrink-0"
+                    style={{ backgroundColor: BRAND.theme.primary }}
+                  >
+                    {BRAND.logo}
+                  </div>
+                  <span className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">
+                    {BRAND.name}
+                  </span>
+                </>
+              )}
             </Link>
           </div>
 
