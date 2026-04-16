@@ -1,3 +1,5 @@
+// src\components\layout\Header.tsx
+
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -11,14 +13,15 @@ import { BRAND } from "@/config/brand.config";
 
 // --- HOOKS & STORES ---
 import { useAuthStore } from "@/store/useAuthStore";
-import { useCartStore } from "@/store/useCartStore"; // 🔥 FIXED: Connected to Zustand
+import { useCartStore } from "@/store/useCartStore"; 
+import { useUIStore } from "@/store/useUIStore"; // 🔥 NEW: Import UI Store for Search Modal
 
 // --- COMPONENTS & SERVICES ---
 import { OtpModal } from "@/components/auth/OtpModal";
 import { apiClient } from "@/lib/api-client";
 
 interface HeaderProps {
-  megaMenu?: React.ReactNode; // 🔥 Pass the MegaMenu as a pre-rendered node
+  megaMenu?: React.ReactNode; 
 }
 
 export function Header({ megaMenu }: HeaderProps) {
@@ -29,12 +32,13 @@ export function Header({ megaMenu }: HeaderProps) {
   // Auth State
   const { user, logout } = useAuthStore();
   
-  // 🔥 FIXED: Pull items from Zustand (Sees both guest local storage & DB items)
+  // Cart State
   const items = useCartStore((s) => s.items);
   const isLoading = useCartStore((s) => s.isLoading);
-  
-  // 🔥 FIXED: Calculate total items safely from the unified Zustand state
   const cartCount = items.reduce((acc, item) => acc + item.quantity, 0);
+
+  // 🔥 NEW: Pull openSearch action from Zustand
+  const { openSearch } = useUIStore();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -49,16 +53,12 @@ export function Header({ megaMenu }: HeaderProps) {
 
   const handleLogout = async () => {
     try {
-      // 1. Tell the backend to destroy the HttpOnly cookie & DB Session
       await apiClient.post('/auth/logout');
     } catch (error) {
       console.warn("Backend logout failed, clearing local state anyway.");
     } finally {
-      // 2. Clear React/Zustand memory
       logout();
       setIsDropdownOpen(false);
-      
-      // 3. Kick the user back to the homepage so protected data disappears
       window.location.href = "/"; 
     }
   };
@@ -104,7 +104,6 @@ export function Header({ megaMenu }: HeaderProps) {
                </button>
                <Link href="/cart" className="relative">
                   <ShoppingCart size={22} className="text-gray-600" />
-                  {/* 🔥 Connected Cart Badge */}
                   {!isLoading && cartCount > 0 && (
                     <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
                       {cartCount}
@@ -121,13 +120,18 @@ export function Header({ megaMenu }: HeaderProps) {
               <ChevronDown size={14} />
             </div>
 
-            <div className="flex-1 relative">
-              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search for flowers, cakes..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg bg-gray-50 focus:outline-none text-sm"
-              />
+            {/* 🔥 UPDATED: Search Trigger Button (Replaces Input) */}
+            <div className="flex-1 relative group cursor-pointer" onClick={openSearch}>
+              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-[#006044] transition-colors pointer-events-none" />
+              <button
+                type="button"
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg bg-gray-50 hover:bg-[#006044]/5 hover:border-[#006044]/30 focus:outline-none text-sm text-left text-gray-500 transition-all flex items-center justify-between"
+              >
+                <span>Search for flowers, cakes...</span>
+                <span className="hidden sm:block text-[10px] font-bold bg-white border border-gray-200 px-2 py-0.5 rounded shadow-sm text-gray-400">
+                  Search
+                </span>
+              </button>
             </div>
           </div>
 
@@ -189,7 +193,6 @@ export function Header({ megaMenu }: HeaderProps) {
             <Link href="/cart" className="flex items-center gap-2 text-gray-800 font-medium relative hover:text-[#006044] transition-colors">
               <ShoppingCart size={20} />
               <span>Cart</span>
-              {/* 🔥 Connected Cart Badge */}
               {!isLoading && cartCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
                   {cartCount}
@@ -199,7 +202,7 @@ export function Header({ megaMenu }: HeaderProps) {
           </div>
         </div>
 
-       {/* 3. 🔥 MEGA MENU INTEGRATION */}
+       {/* 3. MEGA MENU INTEGRATION */}
         <div className="hidden lg:block border-t border-gray-50 bg-white">
           <div className="mx-auto max-w-7xl px-4">
             {megaMenu}
@@ -224,14 +227,11 @@ export function Header({ megaMenu }: HeaderProps) {
           <LayoutGrid size={20} />
           <span className="text-[10px] mt-1 font-medium">Categories</span>
         </Link>
-        <Link href="/occasions" className="flex flex-col items-center justify-center w-full h-full text-gray-500">
-          <Gift size={20} />
-          <span className="text-[10px] mt-1 font-medium">Gifts</span>
-        </Link>
-        <Link href="/contact" className="flex flex-col items-center justify-center w-full h-full text-gray-500">
-          <MessageSquare size={20} />
-          <span className="text-[10px] mt-1 font-medium">Support</span>
-        </Link>
+        {/* 🔥 NEW: Trigger Search Modal from Mobile Navbar too! */}
+        <button onClick={openSearch} className="flex flex-col items-center justify-center w-full h-full text-gray-500">
+          <Search size={20} />
+          <span className="text-[10px] mt-1 font-medium">Search</span>
+        </button>
         <button 
           onClick={() => !user ? setLoginModalOpen(true) : setIsDropdownOpen(!isDropdownOpen)}
           className="flex flex-col items-center justify-center w-full h-full text-gray-500"
