@@ -38,7 +38,7 @@ export default async function SimilarProducts({ category, productId }: SimilarPr
             const itemDiscount = hasDiscount 
               ? Math.round(((item.oldPrice! - item.price) / item.oldPrice!) * 100) 
               : 0;
-
+console.log("Similar Product:", item); // Debug log to verify data structure
             // Use the first image array item OR the single image string based on your schema
             const displayImage = (item.images && item.images[0]) || item.image || '/placeholder.png';
 

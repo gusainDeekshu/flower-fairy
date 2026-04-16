@@ -35,7 +35,6 @@ export default async function Home() {
             "x-tenant-domain": domain, 
           },
         });
-        console.log("[SSR] Fetched homepage data for domain:", domain, response.data);
         return response.data;
       } catch (error) {
         console.error("[SSR] Failed to fetch homepage aggregator data:", error);
