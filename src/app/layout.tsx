@@ -12,7 +12,7 @@ import MegaMenu from "@/components/layout/MegaMenu";
 import SearchModal from "@/components/layout/SearchModal"; 
 
 export const metadata: Metadata = {
-  title: "AE Naturals | Premium Gifts",
+  title: "Flower Fairy | Premium Gifts",
   description: "Fresh flowers and cakes delivered same day.",
 };
 

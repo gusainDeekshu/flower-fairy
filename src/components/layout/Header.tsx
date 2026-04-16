@@ -92,8 +92,8 @@ export function Header({ megaMenu }: HeaderProps) {
               <div className="w-10 h-10 bg-[#006044] rounded-full flex items-center justify-center text-white text-xl shadow-sm group-hover:scale-105 transition-transform">
                 🌸
               </div>
-              <span className="text-2xl font-black text-gray-900 tracking-tight">
-                AE Naturals
+              <span className="text-xl sm:text-2xl font-bold text-gray-800 tracking-tight">
+                Flower Fairy
               </span>
             </Link>
           </div>
