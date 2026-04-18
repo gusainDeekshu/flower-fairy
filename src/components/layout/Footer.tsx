@@ -2,8 +2,10 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Facebook, Twitter, Instagram, Phone, Mail } from 'lucide-react';
+import Image from 'next/image';
+import { Facebook, Twitter, Instagram, Youtube, Phone, Mail } from 'lucide-react';
 import { apiClient } from "@/lib/api-client";
+import { BRAND } from "@/config/brand.config";
 
 interface FooterLink { id: string; label: string; url: string; }
 interface FooterColumn { id: string; title: string; links: FooterLink[]; }
@@ -25,35 +27,72 @@ export async function Footer() {
   return (
     <footer className="bg-[#0f172a] text-gray-300 pt-14 pb-8 px-6 md:px-10">
 
-      {/* TOP SECTION */}
+      {/* TOP */}
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-10 mb-12">
 
-        {/* ✅ BRAND BLOCK (LEFT SIDE) */}
+        {/* ✅ BRAND BLOCK */}
         <div className="md:col-span-4 space-y-5">
 
-          {/* Brand */}
-          <div>
-            <h2 className="text-white text-xl font-bold">AE Naturals</h2>
-            <p className="text-sm opacity-70 mt-2 leading-relaxed">
-              Premium natural wellness products crafted for a healthier lifestyle.
-            </p>
+          {/* Logo + Name */}
+          <div className="flex items-center gap-3">
+            <Image
+              src={BRAND.logo}
+              alt={BRAND.name}
+              width={40}
+              height={40}
+              className="rounded-md object-contain"
+            />
+            <h2 className="text-white text-lg font-bold">
+              {BRAND.name}
+            </h2>
           </div>
 
-          {/* Contact (Moved here) */}
+          {/* Tagline */}
+          <p className="text-sm opacity-70 leading-relaxed">
+            Natural wellness products crafted for modern lifestyles.
+          </p>
+
+          {/* Contact */}
           <div className="space-y-2 text-sm">
-            <a href="tel:+911234567890" className="flex items-center gap-2 hover:text-white transition">
-              <Phone size={16}/> +91-12345-67890
+            <a
+              href={`tel:${BRAND.phone}`}
+              className="flex items-center gap-2 hover:text-white transition"
+            >
+              <Phone size={16}/> {BRAND.phone}
             </a>
-            <a href="mailto:care@aenaturals.in" className="flex items-center gap-2 hover:text-white transition">
-              <Mail size={16}/> care@aenaturals.in
+
+            <a
+              href={`mailto:${BRAND.email}`}
+              className="flex items-center gap-2 hover:text-white transition"
+            >
+              <Mail size={16}/> {BRAND.email}
             </a>
           </div>
+
+          {/* WhatsApp CTA */}
+          <a
+            href={`https://wa.me/${BRAND.whatsapp.replace(/\D/g, '')}`}
+            target="_blank"
+            className="inline-block text-sm font-medium px-4 py-2 rounded-md text-white"
+            style={{ backgroundColor: BRAND.theme.primary }}
+          >
+            Chat on WhatsApp
+          </a>
 
           {/* Social */}
           <div className="flex gap-3 pt-2">
-            <a className="p-2 bg-blue-600 rounded-full hover:opacity-80"><Facebook size={16}/></a>
-            <a className="p-2 bg-sky-400 rounded-full hover:opacity-80"><Twitter size={16}/></a>
-            <a className="p-2 bg-pink-600 rounded-full hover:opacity-80"><Instagram size={16}/></a>
+            <a href={BRAND.social.facebook} target="_blank" className="p-2 bg-blue-600 rounded-full hover:opacity-80">
+              <Facebook size={16}/>
+            </a>
+            <a href={BRAND.social.twitter} target="_blank" className="p-2 bg-sky-400 rounded-full hover:opacity-80">
+              <Twitter size={16}/>
+            </a>
+            <a href={BRAND.social.instagram} target="_blank" className="p-2 bg-pink-600 rounded-full hover:opacity-80">
+              <Instagram size={16}/>
+            </a>
+            <a href={BRAND.social.youtube} target="_blank" className="p-2 bg-red-600 rounded-full hover:opacity-80">
+              <Youtube size={16}/>
+            </a>
           </div>
 
         </div>
@@ -86,11 +125,11 @@ export async function Footer() {
 
       <hr className="border-gray-700 mb-6" />
 
-      {/* ✅ BOTTOM BAR */}
+      {/* BOTTOM */}
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
 
-        <p className="text-sm opacity-60 text-center md:text-left">
-          © {new Date().getFullYear()} AE Naturals. All rights reserved.
+        <p className="text-sm opacity-60">
+          © {new Date().getFullYear()} {BRAND.name}. All rights reserved.
         </p>
 
         {/* Payments */}
