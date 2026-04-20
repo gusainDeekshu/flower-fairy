@@ -110,11 +110,24 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
           </p>
           <form className="flex flex-col sm:flex-row gap-3 max-w-xl mx-auto">
             <input 
-              type="email" 
-              placeholder="Enter your email address" 
-              required
-              className="flex-grow px-5 py-3 rounded-full text-gray-900 outline-none focus:ring-2 focus:ring-[#006044]"
-            />
+  type="email" 
+  placeholder="Enter your email address" 
+  required
+  className="
+    flex-grow 
+    px-5 py-3 
+    rounded-full 
+    bg-white/90 
+    backdrop-blur-md
+    text-gray-900 
+    placeholder-gray-500
+    border border-gray-200
+    focus:ring-2 
+    focus:ring-[#006044]
+    focus:border-[#006044]
+    transition-all
+  "
+/>
             <button 
               type="submit" 
               className="px-8 py-3 bg-[#006044] text-white font-bold rounded-full hover:bg-[#004d36] transition-colors whitespace-nowrap"
