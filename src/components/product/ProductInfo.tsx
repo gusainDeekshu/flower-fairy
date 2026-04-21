@@ -1,22 +1,27 @@
 "use client";
 
 import { useState } from "react";
-// Removed Info and ShieldCheck since we are using dynamic highlights now
-import { ShoppingCart, Zap } from "lucide-react";
-import FeatureHighlights from "@/components/ui/FeatureHighlights"; // <-- Imported our new dynamic component
+import { ShoppingCart, Zap, Loader2 } from "lucide-react"; // Imported Loader2
+import FeatureHighlights from "@/components/ui/FeatureHighlights";
+import { useCartStore } from "@/store/useCartStore"; // 1. Import Zustand store
 
 export default function ProductInfo({ product }: { product: any }) {
   const [quantity, setQuantity] = useState(1);
+  const [isAdding, setIsAdding] = useState(false); // 2. Add loading state
+  
+  // 3. Variant state management to prevent API failures
+  const [selectedVariant, setSelectedVariant] = useState<any>(
+    product.variants?.length > 0 ? product.variants[0] : null
+  );
+
+  const addItem = useCartStore((s) => s.addItem);
 
   // Dynamic discount calculation
   const discount =
     product.oldPrice > product.price
-      ? Math.round(
-          ((product.oldPrice - product.price) / product.oldPrice) * 100,
-        )
+      ? Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)
       : 0;
 
-  // Dynamic Star Rating Generator (e.g., 4.5 stars)
   const renderStars = (rating: number) => {
     const fullStars = Math.floor(rating || 0);
     const hasHalfStar = (rating || 0) % 1 >= 0.5;
@@ -27,14 +32,34 @@ export default function ProductInfo({ product }: { product: any }) {
         {[...Array(fullStars)].map((_, i) => (
           <span key={`full-${i}`}>★</span>
         ))}
-        {hasHalfStar && <span>⯪</span>} {/* Half star character */}
+        {hasHalfStar && <span>⯪</span>}
         {[...Array(emptyStars)].map((_, i) => (
-          <span key={`empty-${i}`} className="text-gray-300">
-            ★
-          </span>
+          <span key={`empty-${i}`} className="text-gray-300">★</span>
         ))}
       </div>
     );
+  };
+
+  // 4. Action Handler
+  const handleAddToCart = async () => {
+    // Prevent adding if variants exist but none is selected
+    if (product.variants?.length > 0 && !selectedVariant) return;
+
+    setIsAdding(true);
+    try {
+      await addItem({
+        productId: product.id,
+        variantId: selectedVariant?.id,
+        name: selectedVariant 
+          ? `${product.name} - ${selectedVariant.name}` 
+          : product.name,
+        price: product.price,
+        image: product.images?.[0] || "",
+        quantity: quantity,
+      });
+    } finally {
+      setIsAdding(false);
+    }
   };
 
   return (
@@ -72,7 +97,7 @@ export default function ProductInfo({ product }: { product: any }) {
         <p className="text-sm text-gray-500 mt-1">Inclusive of all taxes</p>
       </div>
 
-      {/* Variants */}
+      {/* Variants (Now Interactive) */}
       {product.variants && product.variants.length > 0 && (
         <div className="space-y-3">
           <h3 className="font-medium text-gray-900">Available Options:</h3>
@@ -80,7 +105,12 @@ export default function ProductInfo({ product }: { product: any }) {
             {product.variants.map((v: any) => (
               <button
                 key={v.id}
-                className="border border-gray-300 rounded-lg px-4 py-2 text-sm font-medium hover:border-orange-500 hover:bg-orange-50 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
+                onClick={() => setSelectedVariant(v)}
+                className={`border rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                  selectedVariant?.id === v.id
+                    ? "border-orange-500 bg-orange-50 ring-1 ring-orange-500" // Active state
+                    : "border-gray-300 hover:border-orange-500 hover:bg-orange-50"
+                }`}
               >
                 {v.name}
               </button>
@@ -89,8 +119,6 @@ export default function ProductInfo({ product }: { product: any }) {
         </div>
       )}
 
-      {/* --- DYNAMIC FEATURE HIGHLIGHTS --- */}
-      {/* This replaces the old hardcoded deliveryInfo / careInstructions logic */}
       <FeatureHighlights productId={product?.id} />
 
       {/* Buy Actions */}
@@ -103,9 +131,9 @@ export default function ProductInfo({ product }: { product: any }) {
             id="qty"
             value={quantity}
             onChange={(e) => setQuantity(Number(e.target.value))}
-            className="border-gray-300 rounded-md shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm py-1.5 pl-3 pr-8 bg-white border"
+            className="border-gray-300 rounded-md shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm py-1.5 pl-3 pr-8 bg-white border cursor-pointer"
           >
-            {[1, 2, 3, 4, 5].map((n) => (
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
               <option key={n} value={n}>
                 {n}
               </option>
@@ -113,10 +141,16 @@ export default function ProductInfo({ product }: { product: any }) {
           </select>
         </div>
         <div className="flex flex-col space-y-3">
-          <button className="w-full flex justify-center items-center space-x-2 bg-[#FFD814] hover:bg-[#F7CA00] text-gray-900 font-medium py-3 px-6 rounded-full shadow-sm transition-colors">
-            <ShoppingCart size={18} />
-            <span>Add to Cart</span>
+          {/* 5. Wired Button with Loading State */}
+          <button 
+            onClick={handleAddToCart}
+            disabled={isAdding || (product.variants?.length > 0 && !selectedVariant)}
+            className="w-full flex justify-center items-center space-x-2 bg-[#FFD814] hover:bg-[#F7CA00] text-gray-900 font-medium py-3 px-6 rounded-full shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {isAdding ? <Loader2 className="animate-spin" size={18} /> : <ShoppingCart size={18} />}
+            <span>{isAdding ? "Adding to Cart..." : "Add to Cart"}</span>
           </button>
+          
           <button className="w-full flex justify-center items-center space-x-2 bg-[#FFA41C] hover:bg-[#FA8900] text-gray-900 font-medium py-3 px-6 rounded-full shadow-sm transition-colors">
             <Zap size={18} fill="currentColor" />
             <span>Buy Now</span>

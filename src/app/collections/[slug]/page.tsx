@@ -94,11 +94,11 @@ const isValidImageUrl = (url?: string) => {
           <h2 className="text-2xl font-black text-gray-900 tracking-tight uppercase">Explore Collection</h2>
           
           {/* Sort Dropdown */}
-          <select className="bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#006044] shadow-sm cursor-pointer hover:border-[#006044] transition-colors">
+          {/* <select className="bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#006044] shadow-sm cursor-pointer hover:border-[#006044] transition-colors">
             <option>Featured</option>
             <option>Price: Low to High</option>
             <option>Price: High to Low</option>
-          </select>
+          </select> */}
         </div>
 
         {collection.products.length > 0 ? (

@@ -110,25 +110,31 @@ export function AddressesTab() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (saving) return; // 🚨 FIX: Hard block if already processing
     if (!validate()) return;
 
     setSaving(true);
     try {
       if (editingId) {
-        // UPDATE Existing
         await apiClient.patch(`/profile/addresses/${editingId}`, formData);
         toast.success("Address updated successfully!");
       } else {
-        // CREATE New
         await apiClient.post("/profile/addresses", formData);
         toast.success("Address saved successfully!");
       }
       setIsAdding(false);
       setEditingId(null);
       setFormData(INITIAL_FORM);
-      fetchAddresses();
-    } catch (error) {
-      toast.error("Failed to save address");
+      
+      // 🚨 UX Improvement: Refetch silently to ensure local state perfectly matches DB state
+      await fetchAddresses(); 
+    } catch (error: any) {
+      // Handle the P2002 DB constraint error gracefully if it somehow reaches the client
+      if (error.response?.status === 409) {
+         toast.error("Address conflict. Please refresh and try again.");
+      } else {
+         toast.error("Failed to save address");
+      }
     } finally {
       setSaving(false);
     }

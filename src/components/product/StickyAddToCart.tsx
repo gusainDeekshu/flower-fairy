@@ -1,3 +1,5 @@
+// src\components\product\StickyAddToCart.tsx
+
 "use client";
 
 import { Product } from '@/types/product';
