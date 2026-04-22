@@ -8,7 +8,7 @@ import Image from 'next/image';
 import { BlogService } from '@/services/blog.service';
 import { ArrowRight } from 'lucide-react';
 
-export default function HomeBlogSection() {
+export  function HomeBlogSection() {
   const [blogs, setBlogs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 

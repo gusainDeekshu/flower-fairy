@@ -1,3 +1,5 @@
+// src\components\home\TrustBadges.tsx
+
 "use client";
 
 import React from 'react';

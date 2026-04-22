@@ -6,7 +6,6 @@ import HomeRenderer from "@/components/home/HomeRenderer";
 import { apiClient } from "@/lib/api-client";
 
 // 🔥 1. Import the new Blog Section
-import HomeBlogSection from "@/components/home/HomeBlogSection";
 
 export const revalidate = 600;
 
@@ -30,7 +29,7 @@ export default async function Home() {
           backendUrl = `http://localhost:4000${backendUrl}`;
         }
 
-        const response = await apiClient.get(`/admin/stores/home`, {
+        const response = await apiClient.get(`/storefront/home`, {
           headers: {
             "x-tenant-domain": domain, 
           },
@@ -69,7 +68,6 @@ export default async function Home() {
             By placing it after HomeRenderer, it will always reliably show up 
             near the bottom of the page, acting as a great pre-footer SEO section. 
         */}
-        <HomeBlogSection />
 
       </main>
     </HydrationBoundary>
