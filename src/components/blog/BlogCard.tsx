@@ -27,7 +27,7 @@ export default function BlogCard({ blog, isFeatured = false }: BlogCardProps) {
               fill 
               className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
-            <div className="absolute top-4 left-4 bg-white/90 backdrop-blur text-[#006044] text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">
+            <div className="absolute top-4 left-4 bg-white/90 backdrop-blur text-[#217A6E] text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">
               {blog.category?.name || 'Journal'}
             </div>
           </div>
@@ -35,13 +35,13 @@ export default function BlogCard({ blog, isFeatured = false }: BlogCardProps) {
             <div className="flex items-center text-sm text-gray-500 mb-4 gap-2">
               <Calendar size={16} /> {date}
             </div>
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 group-hover:text-[#006044] transition-colors leading-tight">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 group-hover:text-[#217A6E] transition-colors leading-tight">
               {blog.title}
             </h2>
             <p className="text-gray-600 text-lg mb-6 line-clamp-3">
               {blog.excerpt}
             </p>
-            <span className="inline-block text-[#006044] font-semibold tracking-wide border-b-2 border-transparent group-hover:border-[#006044] transition-all w-max pb-1">
+            <span className="inline-block text-[#217A6E] font-semibold tracking-wide border-b-2 border-transparent group-hover:border-[#217A6E] transition-all w-max pb-1">
               Read Full Article →
             </span>
           </div>
@@ -60,7 +60,7 @@ export default function BlogCard({ blog, isFeatured = false }: BlogCardProps) {
           fill 
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
-        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur text-[#006044] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur text-[#217A6E] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
           {blog.category?.name || 'Journal'}
         </div>
       </div>
@@ -68,13 +68,13 @@ export default function BlogCard({ blog, isFeatured = false }: BlogCardProps) {
         <div className="flex items-center text-xs text-gray-500 mb-3 gap-1.5 font-medium">
           <Calendar size={14} /> {date}
         </div>
-        <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-[#006044] transition-colors line-clamp-2 leading-snug">
+        <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-[#217A6E] transition-colors line-clamp-2 leading-snug">
           {blog.title}
         </h3>
         <p className="text-gray-600 text-sm mb-4 line-clamp-2 flex-grow">
           {blog.excerpt}
         </p>
-        <span className="text-sm font-semibold text-[#006044] mt-auto">
+        <span className="text-sm font-semibold text-[#217A6E] mt-auto">
           Read Article →
         </span>
       </div>

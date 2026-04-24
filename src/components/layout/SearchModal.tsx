@@ -111,7 +111,7 @@ export default function SearchModal() {
           {/* Loading State */}
           {showLoading && (
             <div className="px-6 py-12 flex flex-col items-center justify-center text-gray-400">
-              <Loader2 className="w-6 h-6 animate-spin mb-3 text-[#006044]" />
+              <Loader2 className="w-6 h-6 animate-spin mb-3 text-[#217A6E]" />
               <p className="text-sm font-medium">Searching catalog...</p>
             </div>
           )}
@@ -136,7 +136,7 @@ export default function SearchModal() {
                     router.push(`/product/${product.slug}`);
                     closeSearch();
                   }}
-                  className="flex items-center px-4 py-3 hover:bg-white cursor-pointer transition-colors group border-l-2 border-transparent hover:border-[#006044]"
+                  className="flex items-center px-4 py-3 hover:bg-white cursor-pointer transition-colors group border-l-2 border-transparent hover:border-[#217A6E]"
                 >
                   {/* Thumbnail */}
                   <div className="w-12 h-12 bg-gray-100 rounded-lg relative overflow-hidden shrink-0 border border-gray-200/60">
@@ -151,7 +151,7 @@ export default function SearchModal() {
 
                   {/* Details */}
                   <div className="ml-4 flex-1 min-w-0">
-                    <p className="text-sm font-bold text-gray-900 truncate group-hover:text-[#006044] transition-colors">
+                    <p className="text-sm font-bold text-gray-900 truncate group-hover:text-[#217A6E] transition-colors">
                       {product.name}
                     </p>
                     <p className="text-xs text-gray-500 truncate mt-0.5">
@@ -164,7 +164,7 @@ export default function SearchModal() {
                     <span className="text-sm font-black text-gray-900 mr-4">
                       ₹{product.price}
                     </span>
-                    <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-[#006044] transition-colors" />
+                    <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-[#217A6E] transition-colors" />
                   </div>
                 </div>
               ))}

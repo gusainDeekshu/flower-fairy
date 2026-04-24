@@ -144,7 +144,7 @@ export function OtpModal({
 
         <div className="p-8">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-[#006044]/10 text-[#006044] rounded-full mb-4">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-[#217A6E]/10 text-[#217A6E] rounded-full mb-4">
               {step === 1 && <Smartphone size={32} />}
               {step === 2 && <Mail size={32} />}
               {step === 3 && <Smartphone size={32} />}
@@ -171,12 +171,12 @@ export function OtpModal({
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                   placeholder="Email or Phone"
-                  className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-[#006044] outline-none"
+                  className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-[#217A6E] outline-none"
                 />
                 <Button
                   onClick={() => sendOtpMutation.mutate(identifier)}
                   disabled={!identifier || sendOtpMutation.isPending}
-                  className="w-full h-14 bg-[#006044] hover:bg-[#004d3d] rounded-2xl text-lg font-bold"
+                  className="w-full h-14 bg-[#217A6E] hover:bg-[#004d3d] rounded-2xl text-lg font-bold"
                 >
                   {sendOtpMutation.isPending ? <Loader2 className="animate-spin" /> : "Continue"}
                 </Button>
@@ -191,12 +191,12 @@ export function OtpModal({
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
                   placeholder="Enter 6-digit Code"
-                  className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-center text-2xl tracking-[0.3em] font-black focus:ring-2 focus:ring-[#006044] outline-none"
+                  className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-center text-2xl tracking-[0.3em] font-black focus:ring-2 focus:ring-[#217A6E] outline-none"
                 />
                 <Button
                   onClick={() => verifyOtpMutation.mutate(otp)}
                   disabled={otp.length < 6 || verifyOtpMutation.isPending}
-                  className="w-full h-14 bg-[#006044] hover:bg-[#004d3d] rounded-2xl text-lg font-bold"
+                  className="w-full h-14 bg-[#217A6E] hover:bg-[#004d3d] rounded-2xl text-lg font-bold"
                 >
                   {verifyOtpMutation.isPending ? <Loader2 className="animate-spin" /> : "Verify"}
                 </Button>
@@ -219,13 +219,13 @@ export function OtpModal({
                     value={newPhone}
                     onChange={(e) => setNewPhone(e.target.value.replace(/\D/g, ''))}
                     placeholder="Enter Mobile Number"
-                    className="w-full pl-14 pr-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-[#006044] outline-none"
+                    className="w-full pl-14 pr-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-[#217A6E] outline-none"
                   />
                 </div>
                 <Button
                   onClick={() => sendPhoneOtpMutation.mutate(newPhone)}
                   disabled={newPhone.length !== 10 || sendPhoneOtpMutation.isPending}
-                  className="w-full h-14 bg-[#006044] hover:bg-[#004d3d] rounded-2xl text-lg font-bold"
+                  className="w-full h-14 bg-[#217A6E] hover:bg-[#004d3d] rounded-2xl text-lg font-bold"
                 >
                   {sendPhoneOtpMutation.isPending ? <Loader2 className="animate-spin" /> : "Send OTP"}
                 </Button>
@@ -240,12 +240,12 @@ export function OtpModal({
                   value={phoneOtp}
                   onChange={(e) => setPhoneOtp(e.target.value)}
                   placeholder="Enter Mobile OTP"
-                  className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-center text-2xl tracking-[0.3em] font-black focus:ring-2 focus:ring-[#006044] outline-none"
+                  className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-center text-2xl tracking-[0.3em] font-black focus:ring-2 focus:ring-[#217A6E] outline-none"
                 />
                 <Button
                   onClick={() => verifyPhoneOtpMutation.mutate(phoneOtp)}
                   disabled={phoneOtp.length < 6 || verifyPhoneOtpMutation.isPending}
-                  className="w-full h-14 bg-[#006044] hover:bg-[#004d3d] rounded-2xl text-lg font-bold"
+                  className="w-full h-14 bg-[#217A6E] hover:bg-[#004d3d] rounded-2xl text-lg font-bold"
                 >
                   {verifyPhoneOtpMutation.isPending ? <Loader2 className="animate-spin" /> : "Confirm & Login"}
                 </Button>

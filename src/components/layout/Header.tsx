@@ -65,7 +65,7 @@ export function Header({ megaMenu }: HeaderProps) {
       <header className="w-full bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50">
         
         {/* 1. Ultra-Thin Top Utility Bar */}
-        <div className="bg-[#006044] text-white py-1.5 px-4 md:px-8 flex justify-between items-center text-[11px] font-medium tracking-wide">
+        <div className="bg-[#217A6E] text-white py-1.5 px-4 md:px-8 flex justify-between items-center text-[11px] font-medium tracking-wide">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-1.5 opacity-90 hover:opacity-100 transition-opacity">
               <Phone size={12} className="fill-current" />
@@ -91,7 +91,7 @@ export function Header({ megaMenu }: HeaderProps) {
           <div className="shrink-0 flex items-center lg:flex-[1_1_20%]">
             <Link 
               href="/" 
-              className="flex items-center gap-3 group outline-none rounded-xl focus-visible:ring-2 focus-visible:ring-[#006044]/40 p-1 -ml-1 transition-all"
+              className="flex items-center gap-3 group outline-none rounded-xl focus-visible:ring-2 focus-visible:ring-[#217A6E]/40 p-1 -ml-1 transition-all"
               aria-label={`${BRAND.name} Home`}
             >
               {BRAND.logo?.startsWith("http") || BRAND.logo?.startsWith("/") ? (
@@ -108,7 +108,7 @@ export function Header({ megaMenu }: HeaderProps) {
                 // 🌟 FALLBACK LOGO: Only shows if you switch back to an emoji/text in the config
                 <>
                   <div 
-                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-white text-xl sm:text-2xl shadow-md shadow-[#006044]/20 transition-transform duration-400 ease-out group-hover:scale-[1.06] group-active:scale-95 shrink-0"
+                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-white text-xl sm:text-2xl shadow-md shadow-[#217A6E]/20 transition-transform duration-400 ease-out group-hover:scale-[1.06] group-active:scale-95 shrink-0"
                     style={{ backgroundColor: BRAND.theme.primary }}
                   >
                     {BRAND.logo}
@@ -132,7 +132,7 @@ export function Header({ megaMenu }: HeaderProps) {
             {/* Action 1: Search Icon */}
             <button 
               onClick={openSearch} 
-              className="text-gray-900 hover:text-[#006044] transition-colors p-1 group relative"
+              className="text-gray-900 hover:text-[#217A6E] transition-colors p-1 group relative"
               aria-label="Search"
             >
               <Search size={22} strokeWidth={2} className="group-hover:scale-110 transition-transform" />
@@ -142,7 +142,7 @@ export function Header({ megaMenu }: HeaderProps) {
             <div className="relative" ref={dropdownRef}>
               <button 
                 onClick={() => !user ? setLoginModalOpen(true) : setIsDropdownOpen(!isDropdownOpen)}
-                className="text-gray-900 hover:text-[#006044] transition-colors p-1 flex items-center gap-1 group"
+                className="text-gray-900 hover:text-[#217A6E] transition-colors p-1 flex items-center gap-1 group"
                 aria-label="Account"
               >
                 <User size={22} strokeWidth={2} className="group-hover:scale-110 transition-transform" />
@@ -159,10 +159,10 @@ export function Header({ megaMenu }: HeaderProps) {
                   </div>
                   
                   <div className="px-2 py-1">
-                    <Link href="/orders" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-600 rounded-xl hover:bg-[#006044]/5 hover:text-[#006044] transition-colors">
+                    <Link href="/orders" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-600 rounded-xl hover:bg-[#217A6E]/5 hover:text-[#217A6E] transition-colors">
                       <Package size={16} /> My Orders
                     </Link>
-                    <Link href="/profile" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-600 rounded-xl hover:bg-[#006044]/5 hover:text-[#006044] transition-colors">
+                    <Link href="/profile" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-600 rounded-xl hover:bg-[#217A6E]/5 hover:text-[#217A6E] transition-colors">
                       <Settings size={16} /> Profile Settings
                     </Link>
                   </div>
@@ -181,7 +181,7 @@ export function Header({ megaMenu }: HeaderProps) {
             {/* Action 3: Cart Icon */}
             <Link 
               href="/cart" 
-              className="text-gray-900 hover:text-[#006044] transition-colors p-1 relative group"
+              className="text-gray-900 hover:text-[#217A6E] transition-colors p-1 relative group"
               aria-label="Cart"
             >
               <ShoppingCart size={22} strokeWidth={2} className="group-hover:scale-110 transition-transform" />
@@ -205,7 +205,7 @@ export function Header({ megaMenu }: HeaderProps) {
 
       {/* --- MOBILE BOTTOM NAVIGATION --- */}
       <div className="lg:hidden fixed bottom-0 left-0 z-50 w-full h-[68px] bg-white border-t border-gray-100 flex items-center justify-around px-2 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-        <Link href="/" className="flex flex-col items-center justify-center w-full h-full text-[#006044] group">
+        <Link href="/" className="flex flex-col items-center justify-center w-full h-full text-[#217A6E] group">
           <Home size={22} strokeWidth={2.5} className="group-active:scale-95 transition-transform" />
           <span className="text-[10px] mt-1 font-bold">Home</span>
         </Link>

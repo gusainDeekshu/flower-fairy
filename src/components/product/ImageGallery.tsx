@@ -15,7 +15,7 @@ export function ImageGallery({ images }: { images: string[] }) {
             onMouseEnter={() => setActiveImage(img)} // Change on hover for "Instant" feel
             className={cn(
               "w-20 h-20 rounded-xl overflow-hidden border-2 flex-shrink-0 transition-all",
-              activeImage === img ? "border-[#006044] shadow-md" : "border-transparent"
+              activeImage === img ? "border-[#217A6E] shadow-md" : "border-transparent"
             )}
           >
             <img src={img} className="w-full h-full object-cover" />

@@ -68,7 +68,7 @@ export default function BannerBlock({ content }: { content: BannerBlockContent }
           {content.ctaText && content.ctaLink && (
             <Link 
               href={content.ctaLink} 
-              className="pointer-events-auto bg-[#006044] text-white px-8 py-3.5 rounded-full font-black text-sm hover:bg-[#004d36] transition-all shadow-xl hover:-translate-y-1"
+              className="pointer-events-auto bg-[#217A6E] text-white px-8 py-3.5 rounded-full font-black text-sm hover:bg-[#004d36] transition-all shadow-xl hover:-translate-y-1"
             >
               {content.ctaText}
             </Link>

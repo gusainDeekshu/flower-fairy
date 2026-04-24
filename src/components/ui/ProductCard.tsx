@@ -1,3 +1,5 @@
+// src/components/ui/ProductCard.tsx
+
 "use client";
 
 import React from "react";
@@ -16,90 +18,127 @@ interface ProductCardProps {
     images: string[];
     rating?: number;
     reviewCount?: number;
-    category?: { name: string } | string; 
-    stock?: number; // Added so stock can be passed to the button
+    category?: { name: string } | string;
+    stock?: number;
   };
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const discountPercent = product.oldPrice 
-    ? Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)
+  const discountPercent = product.oldPrice
+    ? Math.round(
+        ((product.oldPrice - product.price) / product.oldPrice) * 100
+      )
     : 0;
 
-  const categoryName = typeof product.category === 'string' 
-    ? product.category 
-    : product.category?.name;
+  const categoryName =
+    typeof product.category === "string"
+      ? product.category
+      : product.category?.name;
 
   return (
-    <div className="group flex flex-col bg-white rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-300 border border-gray-100 relative h-full">
-      
-      <Link href={`/product/${product.slug}`} className="relative aspect-[4/5] overflow-hidden bg-[#F7F7F7] block">
+    <article
+      className="
+        group relative flex flex-col h-full rounded-2xl border border-neutral-200 
+        bg-white overflow-hidden transition-all duration-300 
+        hover:shadow-lg hover:-translate-y-0.5
+        focus-within:ring-2 focus-within:ring-black/10
+      "
+    >
+      {/* IMAGE */}
+      <Link
+        href={`/product/${product.slug}`}
+        className="relative block aspect-[4/5] bg-neutral-100 overflow-hidden"
+        aria-label={product.name}
+      >
         <Image
           src={product.images?.[0] || "/placeholder-product.png"}
           alt={product.name}
           fill
-          className="object-cover object-center group-hover:scale-110 transition-transform duration-700 ease-in-out"
-          sizes="(max-width: 768px) 50vw, 25vw"
+          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+          className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
         />
+
+        {/* Discount Badge */}
         {discountPercent > 0 && (
-          <div className="absolute top-3 left-3 bg-[#E42529] text-white text-[10px] sm:text-xs font-black px-2 py-1 rounded-sm tracking-wider z-10 uppercase">
+          <span
+            className="
+              absolute top-2 left-2 z-10 
+              rounded-md bg-red-600 text-white 
+              text-[10px] font-semibold px-2 py-1
+            "
+          >
             {discountPercent}% OFF
-          </div>
+          </span>
         )}
       </Link>
 
-      <div className="p-4 sm:p-5 flex flex-col flex-grow bg-white">
-        {/* Rating Row */}
-        <div className="flex justify-start items-center mb-2">
-          {product.rating && (
-            <div className="flex items-center gap-1 text-xs font-bold text-gray-700">
-              <Star className="w-3.5 h-3.5 fill-[#FFB800] text-[#FFB800]" />
-              <span>{product.rating.toFixed(1)}</span>
-              {product.reviewCount ? (
-                <span className="text-gray-400 font-medium ml-1">
-                  ({product.reviewCount})
-                </span>
-              ) : null}
-            </div>
-          )}
-        </div>
+      {/* CONTENT */}
+      <div className="flex flex-col flex-grow p-3 sm:p-4">
+        {/* Rating */}
+        {product.rating && (
+          <div className="flex items-center gap-1 mb-1 text-xs text-neutral-600">
+            <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
+            <span className="font-medium">
+              {product.rating.toFixed(1)}
+            </span>
+            {product.reviewCount && (
+              <span className="text-neutral-400">
+                ({product.reviewCount})
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Title */}
         <Link href={`/product/${product.slug}`}>
-          <h3 className="font-bold text-gray-900 text-sm md:text-base leading-snug line-clamp-2 mb-1 group-hover:text-[#006044] transition-colors">
+          <h3
+            className="
+              text-sm sm:text-base font-medium text-neutral-900 
+              leading-snug line-clamp-2 
+              transition-colors duration-200 
+              group-hover:text-neutral-700
+            "
+          >
             {product.name}
           </h3>
         </Link>
-        
+
+        {/* Category */}
         {categoryName && (
-          <p className="text-xs text-gray-500 mb-3 truncate">{categoryName}</p>
+          <p className="text-xs text-neutral-500 mt-0.5 truncate">
+            {categoryName}
+          </p>
         )}
 
+        {/* Spacer */}
         <div className="flex-grow" />
 
         {/* Pricing */}
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-lg sm:text-xl font-black text-gray-900 tracking-tight">
+        <div className="mt-3 flex items-center gap-2">
+          <span className="text-base sm:text-lg font-semibold text-neutral-900">
             ₹{product.price.toLocaleString("en-IN")}
           </span>
+
           {product.oldPrice && (
-            <span className="text-sm font-medium text-gray-400 line-through">
+            <span className="text-xs sm:text-sm text-neutral-400 line-through">
               ₹{product.oldPrice.toLocaleString("en-IN")}
             </span>
           )}
         </div>
 
-        {/* Dynamic Add to Cart Button (Handles quantities and disabled states automatically) */}
-        <AddToCartButton 
-  product={{
-    id: product.id,
-    name: product.name,
-    price: product.price,
-    images: product.images
-  }}
-  stock={product.stock} 
-/>
+        {/* CTA */}
+        <div className="mt-3">
+          <AddToCartButton
+            product={{
+              id: product.id,
+              name: product.name,
+              price: product.price,
+              images: product.images,
+            }}
+            stock={product.stock}
+          />
+        </div>
       </div>
-    </div>
+    </article>
   );
 }

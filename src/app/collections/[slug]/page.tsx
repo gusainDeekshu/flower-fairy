@@ -65,7 +65,7 @@ const isValidImageUrl = (url?: string) => {
                 {collection.description}
               </p>
             )}
-            <div className="mt-6 inline-flex items-center bg-green-50 text-[#006044] px-5 py-2 rounded-full text-xs font-black uppercase tracking-widest border border-green-100">
+            <div className="mt-6 inline-flex items-center bg-green-50 text-[#217A6E] px-5 py-2 rounded-full text-xs font-black uppercase tracking-widest border border-green-100">
               {collection.products.length} Products
             </div>
           </div>
@@ -94,7 +94,7 @@ const isValidImageUrl = (url?: string) => {
           <h2 className="text-2xl font-black text-gray-900 tracking-tight uppercase">Explore Collection</h2>
           
           {/* Sort Dropdown */}
-          {/* <select className="bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#006044] shadow-sm cursor-pointer hover:border-[#006044] transition-colors">
+          {/* <select className="bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#217A6E] shadow-sm cursor-pointer hover:border-[#217A6E] transition-colors">
             <option>Featured</option>
             <option>Price: Low to High</option>
             <option>Price: High to Low</option>

@@ -1,108 +1,119 @@
 // src\components\home\HomeBlogSection.tsx
 
+
 "use client";
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { BlogService } from '@/services/blog.service';
-import { ArrowRight } from 'lucide-react';
+import React from "react";
+import Link from "next/link";
+import { ArrowRight, Calendar, Clock } from "lucide-react";
+import { format } from "date-fns";
 
-export default function HomeBlogSection() {
-  const [blogs, setBlogs] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+interface BlogSectionProps {
+  data: any[];
+  settings: {
+    title?: string;
+    subtitle?: string;
+    viewAllLink?: string;
+  };
+}
 
-  useEffect(() => {
-    const fetchBlogs = async () => {
-      try {
-        // Fetch blogs and take only the latest 3 for the homepage
-        const response = await BlogService.getBlogs();
-        setBlogs(response.slice(0, 3));
-      } catch (error) {
-        console.error("Failed to fetch blogs for homepage:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+export const HomeBlogSection: React.FC<BlogSectionProps> = ({
+  data = [],
+  settings,
+}) => {
+  const {
+    title = "From Our Journal",
+    subtitle = "Expert tips, ingredient science, and beauty insights",
+    viewAllLink = "/blog",
+  } = settings;
 
-    fetchBlogs();
-  }, []);
+  const displayBlogs = data.filter((b) => b.isPublished).slice(0, 3);
 
-  // If loading or no blogs, return null so the layout doesn't break
-  if (isLoading || blogs.length === 0) return null;
+  if (displayBlogs.length === 0) return null;
 
   return (
-    <section className="py-16 md:py-24 bg-[#faf9f6]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Section Heading */}
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold font-serif text-gray-900 tracking-tight">
-            Journal
+    <section className="py-16 md:py-24 bg-[#f8f8f7]">
+      <div className="max-w-7xl mx-auto px-4">
+
+        {/* ✅ HEADER */}
+        <div className="text-center mb-12 md:mb-16 max-w-2xl mx-auto">
+          <h2 className="text-3xl md:text-5xl font-black text-zinc-900 tracking-tight">
+            {title}
           </h2>
+
+          <div className="h-1.5 w-16 bg-[#217A6E] rounded-full mx-auto mt-4" />
+
+          {subtitle && (
+            <p className="mt-4 text-sm md:text-base text-zinc-500 leading-relaxed">
+              {subtitle}
+            </p>
+          )}
         </div>
 
-        {/* Blog Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {blogs.map((blog: any) => {
-            const dateObj = new Date(blog.createdAt);
-            const day = dateObj.toLocaleDateString('en-US', { day: '2-digit' });
-            const month = dateObj.toLocaleDateString('en-US', { month: 'short' });
+        {/* ✅ GRID */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          {displayBlogs.map((post) => (
+            <article key={post.id} className="group">
+              <Link href={`/blog/${post.slug}`}>
 
-            return (
-              <Link 
-                href={`/blog/${blog.slug}`} 
-                key={blog.id} 
-                className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300"
-              >
-                {/* Image & Date Badge */}
-                <div className="relative aspect-[4/3] w-full overflow-hidden">
-                  <Image
-                    src={blog.coverImage}
-                    alt={blog.title}
-                    fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  {/* Floating Date Badge */}
-                  <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm shadow-md rounded-lg px-3 py-1.5 flex flex-col items-center justify-center z-10 border border-gray-50">
-                    <span className="text-lg font-black text-gray-900 leading-none">{day}</span>
-                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-0.5">{month}</span>
+                {/* IMAGE */}
+                <div className="relative rounded-2xl overflow-hidden bg-zinc-100">
+                  <div className="aspect-[16/10]">
+                    <img
+                      src={post.coverImage}
+                      alt={post.title}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
                   </div>
-                </div>
 
-                {/* Card Content */}
-                <div className="p-6 flex flex-col flex-grow">
-                  <span className="text-[11px] font-bold text-[#006044] uppercase tracking-widest mb-3">
-                    {blog.category?.name || 'Journal'}
+                  {/* CATEGORY */}
+                  <span className="absolute top-3 left-3 bg-white/90 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest text-[#217A6E] backdrop-blur">
+                    {post.category?.name || "Journal"}
                   </span>
-                  
-                  <h3 className="text-xl font-bold text-gray-900 mb-4 group-hover:text-[#006044] transition-colors line-clamp-2 leading-snug">
-                    {blog.title}
-                  </h3>
-                  
-                  {/* "Read More" Bottom action */}
-                  <div className="mt-auto flex items-center text-sm font-bold text-gray-800 group-hover:text-[#006044] transition-colors">
-                    Read More 
-                    <ArrowRight size={16} className="ml-1.5 transition-transform group-hover:translate-x-1" />
-                  </div>
                 </div>
+
+                {/* CONTENT */}
+                <div className="mt-4 space-y-2">
+                  {/* META */}
+                  <div className="flex items-center gap-4 text-zinc-400 text-[10px] font-bold uppercase tracking-widest">
+                    <span className="flex items-center gap-1">
+                      <Calendar size={12} />
+                      {format(new Date(post.createdAt), "MMM dd")}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Clock size={12} />
+                      {Math.ceil(post.content.length / 1000)} min read
+                    </span>
+                  </div>
+
+                  {/* TITLE */}
+                  <h3 className="text-lg font-bold text-zinc-900 leading-snug group-hover:text-[#217A6E] transition-colors line-clamp-2">
+                    {post.title}
+                  </h3>
+
+                  {/* EXCERPT */}
+                  <p className="text-sm text-zinc-500 line-clamp-2">
+                    {post.excerpt}
+                  </p>
+                </div>
+
               </Link>
-            );
-          })}
+            </article>
+          ))}
         </div>
 
-        {/* View All Button */}
-        <div className="mt-14 flex justify-center">
+        {/* ✅ CTA */}
+        <div className="mt-12 flex justify-center">
           <Link
-            href="/blog"
-            className="px-8 py-3.5 bg-[#006044] text-white text-sm font-bold tracking-wide uppercase rounded-full hover:bg-[#004d36] transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
+            href={viewAllLink}
+            className="inline-flex items-center gap-2 text-sm font-bold text-zinc-900 hover:text-[#217A6E] transition-all group"
           >
-            View All Posts
+            View All Articles
+            <ArrowRight className="transition-transform group-hover:translate-x-1" size={16} />
           </Link>
         </div>
 
       </div>
     </section>
   );
-}
+};

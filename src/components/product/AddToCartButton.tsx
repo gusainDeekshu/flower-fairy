@@ -1,9 +1,12 @@
 // src/components/product/AddToCartButton.tsx
+
+
+
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import { ShoppingCart, Loader2, Plus, Minus } from "lucide-react";
-import { useCartStore } from '@/store/useCartStore';
+import { useCartStore } from "@/store/useCartStore";
 
 interface AddToCartButtonProps {
   product: {
@@ -16,28 +19,27 @@ interface AddToCartButtonProps {
   stock?: number;
 }
 
-export const AddToCartButton: React.FC<AddToCartButtonProps> = ({ 
-  product, 
-  variantId, 
-  stock = 100 
+export const AddToCartButton: React.FC<AddToCartButtonProps> = ({
+  product,
+  variantId,
+  stock = 100,
 }) => {
-  // Pull from our single source of truth (Zustand)
   const items = useCartStore((s) => s.items);
   const addItem = useCartStore((s) => s.addItem);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const removeItem = useCartStore((s) => s.removeItem);
 
-  // Local loading state to show spinners during Zustand's async actions
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // 🔥 FIX: Loose normalization guarantees it finds the item whether undefined or null
   const cartItem = items.find(
-    (item) => 
-      item.productId === product.id && 
+    (item) =>
+      item.productId === product.id &&
       (item.variantId || undefined) === (variantId || undefined)
   );
 
   const currentQuantity = cartItem?.quantity || 0;
+
+  /* ---------------- ACTIONS ---------------- */
 
   const handleAddInitial = async () => {
     if (stock <= 0) return;
@@ -70,54 +72,76 @@ export const AddToCartButton: React.FC<AddToCartButtonProps> = ({
     setIsProcessing(false);
   };
 
+  /* ---------------- OUT OF STOCK ---------------- */
+
   if (stock <= 0) {
     return (
-      <button disabled className="w-full bg-gray-200 text-gray-500 py-3 rounded-xl font-bold text-sm tracking-wide cursor-not-allowed">
-        OUT OF STOCK
+      <button
+        disabled
+        className="w-full h-12 rounded-xl bg-muted text-muted-foreground text-sm font-semibold tracking-wide cursor-not-allowed"
+        aria-disabled="true"
+      >
+        Out of Stock
       </button>
     );
   }
 
-  // Display quantity controls if item is in cart
+  /* ---------------- QUANTITY STATE ---------------- */
+
   if (currentQuantity > 0) {
     return (
-      <div className="flex items-center justify-between bg-gray-100 border border-gray-200 rounded-xl p-1 w-full h-[48px]">
-        <button 
+      <div
+        className="flex items-center justify-between w-full h-12 rounded-xl border border-border bg-card px-1"
+        role="group"
+        aria-label="Update cart quantity"
+      >
+        <button
           onClick={handleDecrease}
           disabled={isProcessing}
-          className="w-10 h-10 flex items-center justify-center bg-white rounded-lg shadow-sm hover:text-[#006044] disabled:opacity-50 transition-colors"
+          aria-label="Decrease quantity"
+          className="h-10 w-10 flex items-center justify-center rounded-lg hover:bg-muted transition disabled:opacity-50"
         >
-          <Minus size={18} />
+          <Minus className="w-4 h-4" />
         </button>
-        <span className="font-black text-gray-900 w-8 text-center text-lg">
-          {isProcessing ? <Loader2 className="w-4 h-4 animate-spin mx-auto text-[#006044]" /> : currentQuantity}
+
+        <span className="text-base font-semibold text-foreground w-8 text-center">
+          {isProcessing ? (
+            <Loader2 className="w-4 h-4 animate-spin mx-auto" />
+          ) : (
+            currentQuantity
+          )}
         </span>
-        <button 
+
+        <button
           onClick={handleIncrease}
           disabled={isProcessing || currentQuantity >= stock}
-          className="w-10 h-10 flex items-center justify-center bg-white rounded-lg shadow-sm hover:text-[#006044] disabled:opacity-50 transition-colors"
+          aria-label="Increase quantity"
+          className="h-10 w-10 flex items-center justify-center rounded-lg hover:bg-muted transition disabled:opacity-50"
         >
-          <Plus size={18} />
+          <Plus className="w-4 h-4" />
         </button>
       </div>
     );
   }
 
-  // Default "Add to Cart" state
+  /* ---------------- DEFAULT CTA ---------------- */
+
   return (
-    <button 
+    <button
       onClick={handleAddInitial}
       disabled={isProcessing}
-      className="w-full flex items-center justify-center gap-2 bg-gray-900 hover:bg-[#006044] text-white h-[48px] rounded-xl font-bold text-sm tracking-wide transition-colors disabled:opacity-70 disabled:cursor-not-allowed group-hover:shadow-md"
+      className="w-full h-12 rounded-xl bg-primary text-primary-foreground text-sm font-semibold tracking-wide flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-70"
+      aria-label="Add product to cart"
     >
       {isProcessing ? (
-        <span className="flex items-center gap-2 animate-pulse">
-          <Loader2 className="w-4 h-4 animate-spin" /> ADDING...
-        </span>
+        <>
+          <Loader2 className="w-4 h-4 animate-spin" />
+          Adding...
+        </>
       ) : (
         <>
           <ShoppingCart className="w-4 h-4" />
-          ADD TO CART
+          Add to Cart
         </>
       )}
     </button>

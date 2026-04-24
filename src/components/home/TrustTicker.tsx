@@ -1,26 +1,86 @@
-// src\components\home\TrustTicker.tsx
+// src/components/home/TrustTicker.tsx
+
+
+
+"use client";
 
 import React from "react";
-import { Leaf, Droplet, ShieldCheck, Rabbit } from "lucide-react";
+import * as LucideIcons from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api-client";
 
-const badges = [
-  { icon: Leaf, text: "100% Vegan Formulations" },
-  { icon: Droplet, text: "Dermatologically Tested" },
-  { icon: Rabbit, text: "Cruelty Free" },
-  { icon: ShieldCheck, text: "No Harsh Chemicals" },
-];
+const getIcon = (name?: string) => {
+  if (!name) return LucideIcons.ShieldCheck;
 
-export function TrustTicker() {
   return (
-    <div className="w-full bg-[#F9F9F9] border-y border-gray-100 py-4 overflow-hidden flex whitespace-nowrap">
-      <div className="flex animate-marquee gap-12 md:gap-24 px-8 items-center min-w-full justify-around">
-        {badges.map((badge, idx) => (
-          <div key={idx} className="flex items-center gap-3 text-gray-800">
-            <badge.icon className="w-5 h-5 text-[#006044]" strokeWidth={1.5} />
-            <span className="text-xs md:text-sm font-bold uppercase tracking-widest">{badge.text}</span>
-          </div>
-        ))}
-      </div>
-    </div>
+    (LucideIcons as any)[name] ||
+    (LucideIcons as any)[
+      name
+        .split("-")
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join("")
+    ] ||
+    LucideIcons.ShieldCheck
   );
-}
+};
+
+export const TrustTicker = ({ settings }: any) => {
+  const { selectedIds = [] } = settings || {};
+
+  const { data: masterFeatures = [], isLoading } = useQuery({
+    queryKey: ["storefront-features"],
+    queryFn: async () => {
+      const res: any = await apiClient.get("/storefront/features");
+      return Array.isArray(res) ? res : res?.data || [];
+    },
+    staleTime: 1000 * 60 * 60,
+  });
+
+  const activeBadges = Array.isArray(masterFeatures)
+    ? masterFeatures.filter((f: any) => selectedIds.includes(f.id))
+    : [];
+
+  if (isLoading || !activeBadges.length) return null;
+
+  return (
+    <section className="w-full bg-[#f5f5f5] border-y border-neutral-200 py-12 ">
+      <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12">
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-y-10 gap-x-6 text-center">
+          {activeBadges.map((badge: any) => {
+            const Icon = getIcon(badge.icon);
+
+            return (
+              <div
+                key={badge.id}
+                className="flex flex-col items-center max-w-[220px]"
+              >
+                {/* ICON */}
+                <div className="w-14 h-14 rounded-full bg-black flex items-center justify-center mb-4">
+                  <Icon
+                    className="w-6 h-6 text-white"
+                    strokeWidth={2}
+                    aria-hidden="true"
+                  />
+                </div>
+
+                {/* TITLE */}
+                <h3 className="text-sm font-semibold text-neutral-900">
+                  {badge.title}
+                </h3>
+
+                {/* DESCRIPTION */}
+                {badge.description && (
+                  <p className="mt-1 text-xs text-neutral-500 leading-relaxed">
+                    {badge.description}
+                  </p>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+      </div>
+    </section>
+  );
+};

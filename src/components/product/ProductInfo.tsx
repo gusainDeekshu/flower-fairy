@@ -151,10 +151,6 @@ export default function ProductInfo({ product }: { product: any }) {
             <span>{isAdding ? "Adding to Cart..." : "Add to Cart"}</span>
           </button>
           
-          <button className="w-full flex justify-center items-center space-x-2 bg-[#FFA41C] hover:bg-[#FA8900] text-gray-900 font-medium py-3 px-6 rounded-full shadow-sm transition-colors">
-            <Zap size={18} fill="currentColor" />
-            <span>Buy Now</span>
-          </button>
         </div>
       </div>
     </div>

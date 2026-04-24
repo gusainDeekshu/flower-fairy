@@ -23,17 +23,17 @@ export default function Navbar() {
       {/* 2️⃣ Main Navbar */}
       <div className="border-b bg-white py-4">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between gap-4 md:gap-8">
-          <div className="text-2xl font-bold text-[#006044] tracking-tighter shrink-0">FlowerFairy</div>
+          <div className="text-2xl font-bold text-[#217A6E] tracking-tighter shrink-0">FlowerFairy</div>
           
           <div className="flex-1 max-w-xl relative hidden md:block">
             <input type="text" placeholder="Search for flowers, cakes, gifts..." 
-              className="w-full bg-[#f3f4f6] border-none rounded-full py-2.5 px-12 text-sm focus:ring-2 focus:ring-[#006044]" />
+              className="w-full bg-[#f3f4f6] border-none rounded-full py-2.5 px-12 text-sm focus:ring-2 focus:ring-[#217A6E]" />
             <Search className="absolute left-4 top-2.5 text-gray-400" size={18} />
           </div>
 
           <div className="flex items-center gap-6 text-[13px] font-bold text-gray-700 uppercase">
             <nav className="hidden lg:flex gap-6 italic">
-              <a href="#" className="text-[#006044]">Home</a>
+              <a href="#" className="text-[#217A6E]">Home</a>
               <a href="#">Shop</a>
               <a href="#">Occasions</a>
               <a href="#">Cakes</a>

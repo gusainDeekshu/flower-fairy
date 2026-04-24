@@ -73,7 +73,7 @@ export default function ProductDetailsClient({ slug }: { slug: string }) {
                 <button 
                   key={idx} 
                   onClick={() => setMainImage(img)}
-                  className={`flex-shrink-0 w-24 h-24 rounded-2xl overflow-hidden border-2 transition-all ${mainImage === img ? 'border-[#006044] ring-4 ring-green-50' : 'border-transparent opacity-70'}`}
+                  className={`flex-shrink-0 w-24 h-24 rounded-2xl overflow-hidden border-2 transition-all ${mainImage === img ? 'border-[#217A6E] ring-4 ring-green-50' : 'border-transparent opacity-70'}`}
                 >
                   <img src={img || "/placeholder.png"} className="w-full h-full object-cover" alt="thumb" />
                 </button>
@@ -109,7 +109,7 @@ export default function ProductDetailsClient({ slug }: { slug: string }) {
                   <button
                     key={v.id}
                     onClick={() => setSelectedVariantId(v.id)}
-                    className={`py-4 rounded-2xl font-black text-sm transition-all border-2 ${selectedVariantId === v.id ? 'bg-[#006044] border-[#006044] text-white shadow-xl shadow-green-100' : 'border-zinc-100 text-zinc-500 hover:border-zinc-300'}`}
+                    className={`py-4 rounded-2xl font-black text-sm transition-all border-2 ${selectedVariantId === v.id ? 'bg-[#217A6E] border-[#217A6E] text-white shadow-xl shadow-green-100' : 'border-zinc-100 text-zinc-500 hover:border-zinc-300'}`}
                   >
                     {v.name}
                   </button>
@@ -124,22 +124,22 @@ export default function ProductDetailsClient({ slug }: { slug: string }) {
                 <span className="w-10 text-center font-black text-xl">{quantity}</span>
                 <button onClick={() => setQuantity(quantity + 1)} className="p-4 text-zinc-400 hover:text-zinc-900"><Plus size={20}/></button>
               </div>
-              <button className="flex-1 bg-[#006044] text-white rounded-3xl font-black text-lg shadow-2xl shadow-green-100 hover:bg-[#004d36] transition-all">ADD TO CART</button>
+              <button className="flex-1 bg-[#217A6E] text-white rounded-3xl font-black text-lg shadow-2xl shadow-green-100 hover:bg-[#004d36] transition-all">ADD TO CART</button>
               <button className="flex-1 bg-rose-500 text-white rounded-3xl font-black text-lg shadow-2xl shadow-rose-100 hover:bg-rose-600 transition-all uppercase tracking-tighter">Buy Now</button>
             </div>
 
             {/* TRUST BADGES */}
             <div className="grid grid-cols-3 gap-4 border-t border-b py-10 mb-12">
               <div className="flex flex-col items-center gap-3 text-center">
-                <Truck className="text-[#006044]" size={32} />
+                <Truck className="text-[#217A6E]" size={32} />
                 <span className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Fast Delivery</span>
               </div>
               <div className="flex flex-col items-center gap-3 text-center">
-                <Leaf className="text-[#006044]" size={32} />
+                <Leaf className="text-[#217A6E]" size={32} />
                 <span className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Fresh Products</span>
               </div>
               <div className="flex flex-col items-center gap-3 text-center">
-                <ShieldCheck className="text-[#006044]" size={32} />
+                <ShieldCheck className="text-[#217A6E]" size={32} />
                 <span className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">100% Safe</span>
               </div>
             </div>
@@ -181,7 +181,7 @@ export default function ProductDetailsClient({ slug }: { slug: string }) {
             {/* DELIVERY INFO */}
             <div className="bg-zinc-50 p-10 rounded-[40px] border border-zinc-100 mb-12">
               <h4 className="flex items-center gap-3 font-black text-zinc-900 mb-6 uppercase tracking-tight">
-                <Clock size={24} className="text-[#006044]"/> Delivery Info
+                <Clock size={24} className="text-[#217A6E]"/> Delivery Info
               </h4>
               <ul className="space-y-4">
                 {product.deliveryInfo?.map((info: string, i: number) => (
@@ -193,11 +193,11 @@ export default function ProductDetailsClient({ slug }: { slug: string }) {
             </div>
 
             {/* HELP CARD */}
-            <div className="bg-[#006044] p-12 rounded-[50px] text-white flex flex-col items-center text-center shadow-3xl shadow-green-100">
+            <div className="bg-[#217A6E] p-12 rounded-[50px] text-white flex flex-col items-center text-center shadow-3xl shadow-green-100">
               <h3 className="text-4xl font-black mb-4 tracking-tight uppercase">Need Help?</h3>
               <p className="text-green-100 opacity-80 mb-10 font-bold max-w-xs">Chat with our experts on WhatsApp for custom orders</p>
-              <button className="bg-white text-[#006044] px-14 py-5 rounded-full font-black flex items-center gap-4 hover:scale-105 transition-all shadow-2xl uppercase text-sm tracking-widest">
-                <MessageCircle size={24} fill="#006044" /> Chat Now
+              <button className="bg-white text-[#217A6E] px-14 py-5 rounded-full font-black flex items-center gap-4 hover:scale-105 transition-all shadow-2xl uppercase text-sm tracking-widest">
+                <MessageCircle size={24} fill="#217A6E" /> Chat Now
               </button>
             </div>
           </div>
@@ -214,7 +214,7 @@ export default function ProductDetailsClient({ slug }: { slug: string }) {
                 </div>
                 <h3 className="font-black text-zinc-900 mb-2 uppercase text-xs tracking-widest">{sim.name}</h3>
                 <div className="flex items-center gap-4">
-                  <span className="font-black text-2xl text-[#006044]">₹{sim.price}</span>
+                  <span className="font-black text-2xl text-[#217A6E]">₹{sim.price}</span>
                   {sim.oldPrice && <span className="text-sm text-zinc-300 line-through font-bold">₹{sim.oldPrice}</span>}
                 </div>
               </div>

@@ -20,7 +20,7 @@ export default function ProductDetailsTable({ productData, extra }: ProductDetai
             {/* --- TOP METADATA SECTION --- */}
             <tr className="bg-zinc-50/50">
               <th className="px-6 py-4 font-black text-zinc-500 uppercase text-[10px] tracking-widest w-1/3 flex items-center gap-2">
-                <Store size={14} className="text-[#006044]" /> Brand / Store
+                <Store size={14} className="text-[#217A6E]" /> Brand / Store
               </th>
               <td className="px-6 py-4 font-bold text-zinc-900">
                 {productData.store?.name || "Flower Fairy Store"}
@@ -28,7 +28,7 @@ export default function ProductDetailsTable({ productData, extra }: ProductDetai
             </tr>
             <tr>
               <th className="px-6 py-4 font-black text-zinc-500 uppercase text-[10px] tracking-widest w-1/3 flex items-center gap-2">
-                <Tag size={14} className="text-[#006044]" /> Category
+                <Tag size={14} className="text-[#217A6E]" /> Category
               </th>
               <td className="px-6 py-4 font-bold text-zinc-900">
                 {productData.category?.name || "Cakes"}

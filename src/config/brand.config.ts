@@ -20,8 +20,40 @@ export const BRAND = {
   },
 
   theme: {
-    primary: "#006044", // <-- Updated to match your dark green UI color, or keep "#009688"
+    primary: "#217A6E",
     secondary: "#22C55E",
     accent: "#F0FDF4",
+
+    success: "#10B981",
+    warning: "#F59E0B",
+    error: "#EF4444",
+    info: "#3B82F6",
+
+    neutral: {
+      light: "#F9FAFB",
+      dark: "#0F1715",
+      border: "#E5E7EB",
+      muted: "#6B7280",
+    },
+
+    // 🔥 ADD THESE (Missing in your system)
+    surface: {
+      base: "#FFFFFF",
+      elevated: "#F8FAFC",
+      glass: "rgba(255,255,255,0.7)",
+    },
+
+    darkSurface: {
+      base: "#0F1715",
+      elevated: "#16211E",
+      glass: "rgba(15,23,21,0.7)",
+    },
+
+    state: {
+      hover: "0.08",
+      active: "0.16",
+      focus: "0.24",
+    }
   },
+
 };

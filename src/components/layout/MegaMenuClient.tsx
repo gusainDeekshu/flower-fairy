@@ -27,14 +27,14 @@ export default function MegaMenuClient({ groups }: { groups: any[] }) {
             {isLink ? (
               <Link
                 href={group.navLink || "#"}
-                className="flex items-center space-x-1 text-sm font-bold uppercase tracking-wider transition-colors hover:text-[#006044] text-gray-700"
+                className="flex items-center space-x-1 text-sm font-bold uppercase tracking-wider transition-colors hover:text-[#217A6E] text-gray-700"
               >
                 <span>{group.title}</span>
               </Link>
             ) : (
               /* 🔥 IF DROPDOWN (Existing) */
               <button
-                className={`flex items-center space-x-1 text-sm font-bold uppercase tracking-wider transition-colors hover:text-[#006044] ${activeGroup === group.id ? "text-[#006044]" : "text-gray-700"}`}
+                className={`flex items-center space-x-1 text-sm font-bold uppercase tracking-wider transition-colors hover:text-[#217A6E] ${activeGroup === group.id ? "text-[#217A6E]" : "text-gray-700"}`}
               >
                 <span>{group.title}</span>
                 <ChevronDown
@@ -64,9 +64,9 @@ export default function MegaMenuClient({ groups }: { groups: any[] }) {
                                         ? `/product/${item.slug}`
                                         : `/${item.slug}` // 🔥 FIX: EXTERNAL links go to root (e.g., /blog)
                                   }
-                                  className="text-[14px] font-semibold text-gray-800 hover:text-[#006044] transition-all flex items-center group"
+                                  className="text-[14px] font-semibold text-gray-800 hover:text-[#217A6E] transition-all flex items-center group"
                                 >
-                                  <span className="w-0 group-hover:w-3 h-[2px] bg-[#006044] mr-0 group-hover:mr-2 transition-all"></span>
+                                  <span className="w-0 group-hover:w-3 h-[2px] bg-[#217A6E] mr-0 group-hover:mr-2 transition-all"></span>
                                   {item.label}
                                 </Link>
                               </li>

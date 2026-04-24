@@ -1,40 +1,163 @@
-// src\components\home\ProductCarousel.tsx
+// src/components/home/ProductCarousel.tsx
 
-import React from "react";
+"use client";
+
+import React, { useRef } from "react";
 import Link from "next/link";
-import ProductCard from "@/components/ui/ProductCard";
+import ProductCard from "../ui/ProductCard";
+import { motion, Variants, useReducedMotion } from "framer-motion";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-export function ProductCarousel({ data, settings }: { data: any[], settings: any }) {
-  if (!data?.length) return null;
+interface ProductCarouselProps {
+  data: any[];
+  settings: {
+    title?: string;
+    showHighlights?: boolean;
+  };
+}
 
-  const title = settings?.title || "Curated For You";
-  const subtitle = settings?.subtitle;
+export const ProductCarousel: React.FC<ProductCarouselProps> = ({
+  data = [],
+  settings,
+}) => {
+  const title = settings?.title || "";
+  const shouldReduceMotion = useReducedMotion();
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (dir: "left" | "right") => {
+    if (!scrollRef.current) return;
+    const scrollAmount = scrollRef.current.clientWidth * 0.8;
+
+    scrollRef.current.scrollBy({
+      left: dir === "left" ? -scrollAmount : scrollAmount,
+      behavior: "smooth",
+    });
+  };
+
+  /* ---------------- EMPTY STATE ---------------- */
+  if (!data || data.length === 0) {
+    return (
+      <section className="w-full px-4 sm:px-6 md:px-8 mt-8 md:mt-12">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col items-center justify-center py-20 bg-zinc-50 rounded-2xl border border-dashed border-zinc-200 text-center">
+            <p className="text-xs font-semibold tracking-widest text-zinc-400 uppercase">
+              No products available
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
-    <div className="w-full max-w-[1600px] mx-auto px-4 md:px-8">
-      <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-8 gap-4">
-        <div>
-          <h2 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">{title}</h2>
-          {subtitle && <p className="text-gray-500 mt-2 font-medium">{subtitle}</p>}
-        </div>
-        {settings?.viewAllLink && (
-          <Link 
-            href={settings.viewAllLink} 
-            className="text-sm font-bold text-gray-900 uppercase tracking-widest border-b-2 border-transparent hover:border-gray-900 transition-colors pb-1 inline-block"
-          >
-            Explore All
-          </Link>
-        )}
-      </div>
+    <section className="w-full px-4 sm:px-6 md:px-8 mt-8 md:mt-12">
+      <motion.div
+        initial={shouldReduceMotion ? false : "hidden"}
+        whileInView="visible"
+        viewport={{ once: true, margin: "-80px" }}
+        variants={sectionVariants}
+        className="max-w-7xl mx-auto"
+      >
+        {/* HEADER */}
+        {title && (
+          <div className="flex items-center justify-between mb-6 md:mb-8">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-zinc-900 tracking-tight">
+              {title}
+            </h2>
 
-      {/* Hide scrollbar, implement snap scrolling for touch */}
-      <div className="flex overflow-x-auto pb-8 -mx-4 px-4 md:mx-0 md:px-0 gap-4 md:gap-6 snap-x snap-mandatory scrollbar-hide">
-        {data.map((product) => (
-          <div key={product.id} className="w-[70vw] sm:w-[45vw] md:w-[30vw] lg:w-[22vw] flex-shrink-0 snap-start">
-            <ProductCard product={product} />
+            {/* Desktop Controls */}
+            <div className="hidden md:flex items-center gap-2">
+              <button
+                onClick={() => scroll("left")}
+                className="p-2 rounded-full border border-zinc-200 hover:bg-zinc-100 transition"
+                aria-label="Scroll left"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <button
+                onClick={() => scroll("right")}
+                className="p-2 rounded-full border border-zinc-200 hover:bg-zinc-100 transition"
+                aria-label="Scroll right"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
           </div>
-        ))}
-      </div>
-    </div>
+        )}
+
+        {/* CAROUSEL */}
+        <div className="relative">
+          {/* Right fade (scroll hint) */}
+          <div className="pointer-events-none absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-white to-transparent z-10 hidden md:block" />
+
+          <div
+            ref={scrollRef}
+            className="
+              flex gap-4 sm:gap-5 md:gap-6
+              overflow-x-auto overflow-y-hidden
+              snap-x snap-mandatory
+              scrollbar-none
+              pb-3
+            "
+            style={{
+              scrollbarWidth: "none", // Firefox
+              msOverflowStyle: "none", // IE/Edge
+            }}
+          >
+            {data.map((item: any) => {
+              const product = item.product ? item.product : item;
+
+              return (
+                <motion.div
+                  key={product.id}
+                  variants={shouldReduceMotion ? {} : itemVariants}
+                  className="
+                    snap-start
+                    min-w-[72%]
+                    sm:min-w-[48%]
+                    md:min-w-[300px]
+                    lg:min-w-[320px]
+                    transition-transform duration-300
+                    hover:scale-[1.03]
+                  "
+                >
+                  <ProductCard product={product} />
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </motion.div>
+    </section>
   );
-}
+};
+
+/* ---------------- ANIMATION SYSTEM ---------------- */
+
+const easing: [number, number, number, number] = [0.22, 1, 0.36, 1];
+
+const sectionVariants: Variants = {
+  hidden: { opacity: 0, y: 40 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.6,
+      ease: easing,
+      staggerChildren: 0.06,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.45,
+      ease: easing,
+    },
+  },
+};

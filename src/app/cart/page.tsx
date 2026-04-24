@@ -87,7 +87,7 @@ export default function CartPage() {
   if (isLoading) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center py-20">
-        <Loader2 className="animate-spin text-[#006044] mb-4" size={40} />
+        <Loader2 className="animate-spin text-[#217A6E] mb-4" size={40} />
         <p className="text-gray-500 font-bold tracking-widest uppercase text-sm">Syncing Cart...</p>
       </div>
     );
@@ -100,7 +100,7 @@ export default function CartPage() {
         <h2 className="text-2xl font-bold text-gray-800">Your cart is empty</h2>
         <p className="text-gray-500 mb-8">Add some beautiful products to get started!</p>
         <Link href="/">
-          <Button className="bg-[#006044] hover:bg-[#004d3d] px-8 py-6 text-lg rounded-xl">
+          <Button className="bg-[#217A6E] hover:bg-[#004d3d] px-8 py-6 text-lg rounded-xl">
             Continue Shopping
           </Button>
         </Link>
@@ -143,7 +143,7 @@ export default function CartPage() {
                 </div>
 
                 <div className="flex justify-between items-center mt-4">
-                  <span className="font-black text-[#006044] text-lg">
+                  <span className="font-black text-[#217A6E] text-lg">
                     ₹{item.price}
                   </span>
                   
@@ -152,7 +152,7 @@ export default function CartPage() {
                     <button 
                       onClick={() => handleUpdateQty(item.productId, Math.max(1, item.quantity - 1), item.variantId)}
                       disabled={isProcessing}
-                      className="hover:text-[#006044] disabled:opacity-50 transition-colors"
+                      className="hover:text-[#217A6E] disabled:opacity-50 transition-colors"
                     >
                       <Minus size={14} />
                     </button>
@@ -162,7 +162,7 @@ export default function CartPage() {
                     <button 
                       onClick={() => handleUpdateQty(item.productId, item.quantity + 1, item.variantId)}
                       disabled={isProcessing}
-                      className="hover:text-[#006044] disabled:opacity-50 transition-colors"
+                      className="hover:text-[#217A6E] disabled:opacity-50 transition-colors"
                     >
                       <Plus size={14} />
                     </button>
@@ -191,13 +191,13 @@ export default function CartPage() {
             
             <div className="flex justify-between font-black text-xl py-6">
               <span>Total Amount</span>
-              <span className="text-[#006044]">₹{total.toLocaleString('en-IN')}</span>
+              <span className="text-[#217A6E]">₹{total.toLocaleString('en-IN')}</span>
             </div>
 
             <Button
               onClick={initiateCheckoutProcess}
               disabled={isProcessing}
-              className="w-full bg-[#006044] hover:bg-[#004d3d] h-14 text-lg font-bold rounded-xl transition-all shadow-lg shadow-green-900/20 disabled:opacity-70"
+              className="w-full bg-[#217A6E] hover:bg-[#004d3d] h-14 text-lg font-bold rounded-xl transition-all shadow-lg shadow-green-900/20 disabled:opacity-70"
             >
               {isProcessing ? (
                 <div className="flex items-center gap-2"><Loader2 className="animate-spin" size={20} /> Processing...</div>

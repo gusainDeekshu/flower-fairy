@@ -318,7 +318,7 @@ export default function CheckoutPage() {
                 onClick={() => setSelectedAddress(addr)}
                 className={`p-4 border rounded-xl cursor-pointer transition-colors ${
                   selectedAddress?.id === addr.id
-                    ? "border-[#006044] bg-[#006044]/5"
+                    ? "border-[#217A6E] bg-[#217A6E]/5"
                     : "border-gray-200 hover:border-gray-300"
                 }`}
               >
@@ -375,7 +375,7 @@ export default function CheckoutPage() {
             {/* Phone Number Input */}
             <div className="relative">
               <input
-                className={`p-2 border rounded-md w-full focus:ring-2 focus:ring-[#006044] transition-all ${
+                className={`p-2 border rounded-md w-full focus:ring-2 focus:ring-[#217A6E] transition-all ${
                   newAddress.phone && !/^[6-9]\d{9}$/.test(newAddress.phone)
                     ? "border-red-500"
                     : "border-gray-300"
@@ -427,7 +427,7 @@ export default function CheckoutPage() {
             <div className="relative">
               <input
                 type="text"
-                className="p-2 border rounded-md w-full focus:ring-2 focus:ring-[#006044]"
+                className="p-2 border rounded-md w-full focus:ring-2 focus:ring-[#217A6E]"
                 placeholder="6-digit Pincode"
                 maxLength={6}
                 required
@@ -456,7 +456,7 @@ export default function CheckoutPage() {
               </Button>
               <Button
                 type="submit"
-                className="w-full bg-[#006044] hover:bg-[#004d36] text-white"
+                className="w-full bg-[#217A6E] hover:bg-[#004d36] text-white"
               >
                 Save Address
               </Button>
@@ -486,11 +486,11 @@ export default function CheckoutPage() {
         {/* 🔥 NEW: Courier Selection UI */}
         <div className="border-t pt-4 mb-6">
           <h3 className="font-semibold mb-3 flex items-center gap-2">
-            <Truck size={18} className="text-[#006044]" /> Delivery Options
+            <Truck size={18} className="text-[#217A6E]" /> Delivery Options
           </h3>
 
           {isCalculatingShipping ? (
-            <div className="flex items-center gap-2 text-sm text-[#006044] bg-[#006044]/5 p-3 rounded-lg border border-[#006044]/10">
+            <div className="flex items-center gap-2 text-sm text-[#217A6E] bg-[#217A6E]/5 p-3 rounded-lg border border-[#217A6E]/10">
               <Loader2 className="animate-spin w-4 h-4" /> Fetching best
               rates...
             </div>
@@ -504,7 +504,7 @@ export default function CheckoutPage() {
                   key={option.courier_id}
                   className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all ${
                     selectedCourierId === option.courier_id
-                      ? "border-[#006044] bg-[#006044]/5 ring-1 ring-[#006044]"
+                      ? "border-[#217A6E] bg-[#217A6E]/5 ring-1 ring-[#217A6E]"
                       : "bg-white"
                   }`}
                 >
@@ -514,7 +514,7 @@ export default function CheckoutPage() {
                       name="courier"
                       checked={selectedCourierId === option.courier_id}
                       onChange={() => handleCourierSelect(option)}
-                      className="accent-[#006044] w-4 h-4"
+                      className="accent-[#217A6E] w-4 h-4"
                     />
                     <div>
                       <p className="font-medium text-sm">
@@ -573,7 +573,7 @@ export default function CheckoutPage() {
 
           <div className="font-bold text-lg flex justify-between mt-4 border-t pt-4">
             <span>Total</span>
-            <span className="text-[#006044]">₹{grandTotal.toFixed(2)}</span>
+            <span className="text-[#217A6E]">₹{grandTotal.toFixed(2)}</span>
           </div>
         </div>
 
@@ -586,7 +586,7 @@ export default function CheckoutPage() {
             addresses.length === 0 ||
             !selectedCourierId
           }
-          className="w-full mt-6 bg-[#006044] hover:bg-[#004d36] text-white py-6 text-lg rounded-xl shadow-md transition-all active:scale-[0.98]"
+          className="w-full mt-6 bg-[#217A6E] hover:bg-[#004d36] text-white py-6 text-lg rounded-xl shadow-md transition-all active:scale-[0.98]"
         >
           {isProcessing ? (
             <span className="flex items-center gap-2">
