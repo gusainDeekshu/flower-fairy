@@ -1,4 +1,4 @@
-// src\components\home\ProductCarousel.tsx
+// src/components/home/ProductCarousel.tsx
 
 "use client";
 
@@ -27,6 +27,7 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
   const scroll = (dir: "left" | "right") => {
     if (!scrollRef.current) return;
     const scrollAmount = scrollRef.current.clientWidth * 0.8;
+
     scrollRef.current.scrollBy({
       left: dir === "left" ? -scrollAmount : scrollAmount,
       behavior: "smooth",
@@ -86,17 +87,22 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
 
         {/* CAROUSEL */}
         <div className="relative">
-          {/* Right fade only (scroll hint) */}
-          <div className="pointer-events-none absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-white to-transparent z-10 hidden md:block" />
+          {/* Right fade (scroll hint) */}
+          <div className="pointer-events-none absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-white to-transparent z-10 hidden md:block" />
+
           <div
             ref={scrollRef}
             className="
-            flex gap-4 sm:gap-5 md:gap-6
-            overflow-x-auto overflow-y-hidden
-            snap-x snap-mandatory
-            scrollbar-none
-            pb-3
-          "
+              flex gap-4 sm:gap-5 md:gap-6
+              overflow-x-auto overflow-y-hidden
+              snap-x snap-mandatory
+              scrollbar-none
+              pb-3
+            "
+            style={{
+              scrollbarWidth: "none", // Firefox
+              msOverflowStyle: "none", // IE/Edge
+            }}
           >
             {data.map((item: any) => {
               const product = item.product ? item.product : item;
