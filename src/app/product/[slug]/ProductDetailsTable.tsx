@@ -23,7 +23,7 @@ export default function ProductDetailsTable({ productData, extra }: ProductDetai
                 <Store size={14} className="text-[#217A6E]" /> Brand / Store
               </th>
               <td className="px-6 py-4 font-bold text-zinc-900">
-                {productData.store?.name || "AE Naturals Store"}
+                {productData.store?.name || "Flower Fairy Store"}
               </td>
             </tr>
             <tr>
