@@ -19,9 +19,15 @@ interface HeroBannerProps {
     banners?: {
       imageUrl: string;
       link?: string;
+      collectionId?: string;
     }[];
   };
 }
+
+const SECTION_SPACING = "py-8 md:py-12 lg:py-16";
+const CONTAINER_SPACING = "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8";
+const MIN_SWIPE_DISTANCE = 50;
+const AUTO_SLIDE_INTERVAL = 5000;
 
 export const HeroBanner = ({
   data = [],
@@ -33,12 +39,14 @@ export const HeroBanner = ({
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
 
-  const MIN_SWIPE_DISTANCE = 50;
-
-  const normalizedData = useMemo(() => {
-    const rawBanners = settings?.banners?.length
-      ? settings.banners
-      : data;
+  /**
+   * Normalize incoming banner data
+   */
+  const banners = useMemo(() => {
+    const rawBanners =
+      settings?.banners?.length && settings.banners.length > 0
+        ? settings.banners
+        : data;
 
     return rawBanners
       .map((banner: any) => ({
@@ -51,36 +59,57 @@ export const HeroBanner = ({
           banner.link ||
           banner.content?.link ||
           banner.content?.url ||
-          "#",
+          "",
         altText:
           banner.content?.altText ||
           banner.title ||
           "Hero Banner",
       }))
-      .filter((banner) => banner.imageUrl);
+      .filter((banner) => Boolean(banner.imageUrl));
   }, [data, settings]);
 
-  const total = normalizedData.length;
+  const totalSlides = banners.length;
 
+  /**
+   * Navigation
+   */
   const goToNext = useCallback(() => {
-    if (total <= 1) return;
-    setCurrentIndex((prev) => (prev + 1) % total);
-  }, [total]);
+    if (totalSlides <= 1) return;
+
+    setCurrentIndex((prev) => (prev + 1) % totalSlides);
+  }, [totalSlides]);
 
   const goToPrev = useCallback(() => {
-    if (total <= 1) return;
-    setCurrentIndex((prev) => (prev - 1 + total) % total);
-  }, [total]);
+    if (totalSlides <= 1) return;
 
+    setCurrentIndex(
+      (prev) => (prev - 1 + totalSlides) % totalSlides
+    );
+  }, [totalSlides]);
+
+  /**
+   * Auto-play
+   */
   useEffect(() => {
-    if (isPaused || total <= 1) return;
+    if (isPaused || totalSlides <= 1) return;
 
-    const interval = setInterval(goToNext, 5000);
+    const interval = setInterval(
+      goToNext,
+      AUTO_SLIDE_INTERVAL
+    );
 
     return () => clearInterval(interval);
-  }, [goToNext, isPaused, total]);
+  }, [goToNext, isPaused, totalSlides]);
 
-  // Mobile swipe support
+  /**
+   * Touch support
+   */
+  const resetTouchState = () => {
+    touchStartX.current = null;
+    touchEndX.current = null;
+    setIsPaused(false);
+  };
+
   const handleTouchStart = (e: React.TouchEvent) => {
     setIsPaused(true);
     touchStartX.current = e.touches[0].clientX;
@@ -95,127 +124,135 @@ export const HeroBanner = ({
       touchStartX.current === null ||
       touchEndX.current === null
     ) {
-      setIsPaused(false);
+      resetTouchState();
       return;
     }
 
-    const distance =
+    const swipeDistance =
       touchStartX.current - touchEndX.current;
 
-    if (Math.abs(distance) > MIN_SWIPE_DISTANCE) {
-      if (distance > 0) {
-        goToNext();
-      } else {
-        goToPrev();
-      }
+    if (Math.abs(swipeDistance) > MIN_SWIPE_DISTANCE) {
+      swipeDistance > 0 ? goToNext() : goToPrev();
     }
 
-    touchStartX.current = null;
-    touchEndX.current = null;
-    setIsPaused(false);
+    resetTouchState();
   };
 
-  if (!total) return null;
+  if (!totalSlides) return null;
 
   return (
-    <section className="w-full bg-white py-4 md:py-6">
-      {/* Centered Container like FlowerAura */}
-      <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-        {/* Banner Card */}
+    <section className={`w-full bg-white ${SECTION_SPACING}`}>
+      <div className={CONTAINER_SPACING}>
         <div
-          className="group relative overflow-hidden rounded-2xl md:rounded-3xl"
+          className="group relative overflow-hidden rounded-3xl"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          {/* Height like FlowerAura */}
-          <div className="relative h-[180px] sm:h-[260px] md:h-[360px] lg:h-[420px] xl:h-[480px]">
-            {normalizedData.map((banner, index) => (
-              <div
-                key={index}
-                className={`absolute inset-0 transition-opacity duration-500 ${
-                  index === currentIndex
-                    ? "opacity-100 z-10"
-                    : "opacity-0 z-0 pointer-events-none"
-                }`}
-              >
-                <Link
-                  href={banner.link}
-                  className="block h-full w-full"
+          {/* Hero Slider */}
+          <div className="relative h-[220px] sm:h-[320px] md:h-[420px] lg:h-[500px] xl:h-[560px]">
+            {banners.map((banner, index) => {
+              const href = banner.link?.trim() || "#";
+              const isActive = index === currentIndex;
+
+              return (
+                <div
+                  key={index}
+                  className={`absolute inset-0 transition-opacity duration-500 ${
+                    isActive
+                      ? "z-10 opacity-100"
+                      : "z-0 opacity-0 pointer-events-none"
+                  }`}
                 >
-                  <div className="relative h-full w-full">
-                    <Image
-                      src={banner.imageUrl}
-                      alt={banner.altText}
-                      fill
-                      priority={index === 0}
-                      sizes="100vw"
-                      className="object-cover object-center"
-                      unoptimized
-                    />
-                  </div>
-                </Link>
-              </div>
-            ))}
+                  <Link
+                    href={href}
+                    className="block h-full w-full"
+                    aria-label={banner.altText}
+                  >
+                    <div className="relative h-full w-full">
+                      <Image
+                        src={banner.imageUrl}
+                        alt={banner.altText}
+                        fill
+                        priority={index === 0}
+                        sizes="100vw"
+                        className="object-cover object-center"
+                        unoptimized
+                      />
+                    </div>
+                  </Link>
+                </div>
+              );
+            })}
           </div>
 
-          {/* Arrows desktop only */}
-          {/* Arrows desktop only (show on hover) */}
-{total > 1 && (
-  <>
-    <button
-      onClick={goToPrev}
-      aria-label="Previous slide"
-      className="
-        hidden md:flex
-        absolute left-4 top-1/2 -translate-y-1/2 z-20
-        h-10 w-10 items-center justify-center
-        rounded-full bg-white/95 shadow-md backdrop-blur-sm
-        opacity-0 scale-95
-        transition-all duration-300
-        group-hover:opacity-100 group-hover:scale-100
-        hover:scale-110 hover:shadow-lg
-      "
-    >
-      <ChevronLeft size={18} />
-    </button>
+          {/* Navigation Arrows */}
+          {totalSlides > 1 && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  goToPrev();
+                }}
+                aria-label="Previous slide"
+                className="
+                  absolute left-6 top-1/2 z-20 hidden h-11 w-11
+                  -translate-y-1/2 items-center justify-center
+                  rounded-full bg-white/95 shadow-md backdrop-blur-sm
+                  opacity-0 scale-95 transition-all duration-300
+                  group-hover:opacity-100 group-hover:scale-100
+                  hover:scale-110 hover:shadow-lg
+                  md:flex
+                "
+              >
+                <ChevronLeft size={18} />
+              </button>
 
-    <button
-      onClick={goToNext}
-      aria-label="Next slide"
-      className="
-        hidden md:flex
-        absolute right-4 top-1/2 -translate-y-1/2 z-20
-        h-10 w-10 items-center justify-center
-        rounded-full bg-white/95 shadow-md backdrop-blur-sm
-        opacity-0 scale-95
-        transition-all duration-300
-        group-hover:opacity-100 group-hover:scale-100
-        hover:scale-110 hover:shadow-lg
-      "
-    >
-      <ChevronRight size={18} />
-    </button>
-  </>
-)}
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  goToNext();
+                }}
+                aria-label="Next slide"
+                className="
+                  absolute right-6 top-1/2 z-20 hidden h-11 w-11
+                  -translate-y-1/2 items-center justify-center
+                  rounded-full bg-white/95 shadow-md backdrop-blur-sm
+                  opacity-0 scale-95 transition-all duration-300
+                  group-hover:opacity-100 group-hover:scale-100
+                  hover:scale-110 hover:shadow-lg
+                  md:flex
+                "
+              >
+                <ChevronRight size={18} />
+              </button>
+            </>
+          )}
         </div>
 
-        {/* Dots below banner */}
-        {total > 1 && (
-          <div className="mt-4 flex items-center justify-center gap-2">
-            {normalizedData.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentIndex(index)}
-                className={`rounded-full transition-all duration-300 ${
-                  currentIndex === index
-                    ? "w-3 h-3 bg-slate-700"
-                    : "w-2 h-2 bg-slate-300"
-                }`}
-              />
-            ))}
+        {/* Pagination Dots */}
+        {totalSlides > 1 && (
+          <div className="mt-6 flex items-center justify-center gap-3">
+            {banners.map((_, index) => {
+              const isActive = index === currentIndex;
+
+              return (
+                <button
+                  key={index}
+                  onClick={() => setCurrentIndex(index)}
+                  aria-label={`Go to slide ${index + 1}`}
+                  className={`rounded-full transition-all duration-300 ${
+                    isActive
+                      ? "h-3 w-3 bg-slate-700"
+                      : "h-2 w-2 bg-slate-300"
+                  }`}
+                />
+              );
+            })}
           </div>
         )}
       </div>

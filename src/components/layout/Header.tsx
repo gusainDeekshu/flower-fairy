@@ -209,10 +209,17 @@ export function Header({ megaMenu }: HeaderProps) {
           <Home size={22} strokeWidth={2.5} className="group-active:scale-95 transition-transform" />
           <span className="text-[10px] mt-1 font-bold">Home</span>
         </Link>
-        <Link href="/shop" className="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-gray-900 group">
-          <LayoutGrid size={22} strokeWidth={2} className="group-active:scale-95 transition-transform" />
-          <span className="text-[10px] mt-1 font-medium">Shop</span>
-        </Link>
+        <a
+  href={`tel:${BRAND.phone.replace(/\s+/g, "")}`}
+  className="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-gray-900 group"
+>
+  <Phone
+    size={22}
+    strokeWidth={2}
+    className="group-active:scale-95 transition-transform"
+  />
+  <span className="text-[10px] mt-1 font-medium">Call</span>
+</a>
         <button onClick={openSearch} className="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-gray-900 group">
           <Search size={22} strokeWidth={2} className="group-active:scale-95 transition-transform" />
           <span className="text-[10px] mt-1 font-medium">Search</span>
