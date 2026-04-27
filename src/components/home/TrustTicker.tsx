@@ -1,7 +1,5 @@
 // src/components/home/TrustTicker.tsx
 
-
-
 "use client";
 
 import React from "react";
@@ -17,7 +15,7 @@ const getIcon = (name?: string) => {
     (LucideIcons as any)[
       name
         .split("-")
-        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
         .join("")
     ] ||
     LucideIcons.ShieldCheck
@@ -37,49 +35,51 @@ export const TrustTicker = ({ settings }: any) => {
   });
 
   const activeBadges = Array.isArray(masterFeatures)
-    ? masterFeatures.filter((f: any) => selectedIds.includes(f.id))
+    ? masterFeatures.filter((feature: any) => selectedIds.includes(feature.id))
     : [];
 
   if (isLoading || !activeBadges.length) return null;
 
   return (
-    <section className="w-full bg-[#f5f5f5] border-y border-neutral-200 py-12 ">
-      <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12">
+    <section className="w-full bg-white py-8 md:py-12">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* Inner bordered container */}
+        <div className="rounded-3xl border border-neutral-200 bg-neutral-50 px-6 py-8 md:px-10 md:py-10 shadow-sm">
+          <div className="flex flex-wrap items-start justify-center gap-y-8 md:gap-y-0">
+            {activeBadges.map((badge: any) => {
+              const Icon = getIcon(badge.icon);
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-y-10 gap-x-6 text-center">
-          {activeBadges.map((badge: any) => {
-            const Icon = getIcon(badge.icon);
+              return (
+                <div
+                  key={badge.id}
+                  className="flex w-1/2 flex-col items-center text-center md:w-1/4 px-4"
+                >
+                  {/* Icon */}
 
-            return (
-              <div
-                key={badge.id}
-                className="flex flex-col items-center max-w-[220px]"
-              >
-                {/* ICON */}
-                <div className="w-14 h-14 rounded-full bg-black flex items-center justify-center mb-4">
-                  <Icon
-                    className="w-6 h-6 text-white"
-                    strokeWidth={2}
-                    aria-hidden="true"
-                  />
+                  <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-neutral-200 bg-black shadow-sm transition-all duration-300 group-hover:shadow-md">
+                    <Icon
+                      className="h-6 w-6 text-white"
+                      strokeWidth={1.8}
+                      aria-hidden="true"
+                    />
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="max-w-[180px] truncate text-base font-semibold text-neutral-900 leading-tight">
+                    {badge.title}
+                  </h3>
+
+                  {/* Description */}
+                  {badge.description && (
+                    <p className="mt-1 max-w-[180px] truncate text-sm text-neutral-500 leading-tight">
+                      {badge.description}
+                    </p>
+                  )}
                 </div>
-
-                {/* TITLE */}
-                <h3 className="text-sm font-semibold text-neutral-900">
-                  {badge.title}
-                </h3>
-
-                {/* DESCRIPTION */}
-                {badge.description && (
-                  <p className="mt-1 text-xs text-neutral-500 leading-relaxed">
-                    {badge.description}
-                  </p>
-                )}
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-
       </div>
     </section>
   );
