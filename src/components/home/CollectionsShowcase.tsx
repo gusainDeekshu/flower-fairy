@@ -6,6 +6,7 @@
 import React from "react";
 import Link from "next/link";
 import ProductCard from "../ui/ProductCard";
+import { ArrowRight, PackageSearch, Sparkles } from "lucide-react";
 
 interface CollectionsShowcaseProps {
   data: any[];
@@ -22,6 +23,12 @@ export const CollectionsShowcase: React.FC<CollectionsShowcaseProps> = ({
 }) => {
   const title = settings?.title || "";
   const collection = data?.length > 0 ? data[0] : null;
+
+
+  const ADMIN_URL =
+  process.env.NEXT_PUBLIC_ADMIN_URL ||
+  "http://localhost:3000";
+
 
   /* ---------------- EMPTY STATE ---------------- */
   if (!settings?.collectionId) {
@@ -40,27 +47,56 @@ export const CollectionsShowcase: React.FC<CollectionsShowcaseProps> = ({
 
   /* ---------------- NO DATA STATE ---------------- */
   if (!collection || !collection.products || collection.products.length === 0) {
-    return (
-      <section className="w-full px-4 sm:px-6 md:px-8 mt-6 md:mt-10">
-        <div className="max-w-7xl mx-auto">
-          {title && (
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-zinc-900 mb-6">
+  return (
+    <section className="w-full px-4 sm:px-6 md:px-8 mt-6 md:mt-10">
+      <div className="max-w-7xl mx-auto">
+        {title && (
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-zinc-900">
               {title}
             </h2>
-          )}
 
-          <div className="flex flex-col items-center justify-center py-16 bg-amber-50 rounded-2xl border border-dashed border-amber-300 text-center">
-            <p className="text-sm font-semibold text-amber-700 mb-2">
-              No products available
+            <Sparkles className="w-5 h-5 text-amber-500" />
+          </div>
+        )}
+
+        {/* EMPTY STATE */}
+        <div className="relative overflow-hidden rounded-3xl border border-dashed border-zinc-300 bg-gradient-to-br from-zinc-50 to-white py-20 px-6">
+          {/* Background Glow */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.12),transparent_35%)]" />
+
+          <div className="relative flex flex-col items-center justify-center text-center max-w-lg mx-auto">
+            {/* Icon */}
+            <div className="w-20 h-20 rounded-2xl bg-amber-100 flex items-center justify-center mb-6 shadow-sm">
+              <PackageSearch className="w-10 h-10 text-amber-600" />
+            </div>
+
+            {/* Heading */}
+            <h3 className="text-xl sm:text-2xl font-bold text-zinc-900 mb-3">
+              No products available yet
+            </h3>
+
+            {/* Description */}
+            <p className="text-sm sm:text-base text-zinc-500 leading-relaxed mb-8 max-w-md">
+              This collection is currently empty. Add products from your admin
+              dashboard to make them visible on your storefront.
             </p>
-            <p className="text-xs text-amber-600 max-w-sm">
-              This collection doesn’t have any products yet.
-            </p>
+
+            {/* CTA */}
+            <Link
+              href={`${ADMIN_URL}/storefront`}
+              target="_blank"
+              className="inline-flex items-center gap-2 rounded-full bg-black text-white px-6 py-3 text-sm font-medium transition-all hover:scale-105"
+            >
+              Manage Products
+              <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
         </div>
-      </section>
-    );
-  }
+      </div>
+    </section>
+  );
+}
 
   /* ---------------- SUCCESS STATE ---------------- */
 

@@ -4,6 +4,8 @@
 
 import React from "react";
 import ProductCard from "../ui/ProductCard";
+import Link from "next/link";
+import { ArrowRight, PackageSearch, Sparkles } from "lucide-react";
 
 interface FeaturedProductsProps {
   data?: any[];
@@ -19,6 +21,11 @@ export const FeaturedProducts = ({
   const title = settings?.title;
 
   const hasProducts = data && data.length > 0;
+
+
+  const ADMIN_URL =
+  process.env.NEXT_PUBLIC_ADMIN_URL ||
+  "http://localhost:3000";
 
   return (
     <section
@@ -39,16 +46,47 @@ export const FeaturedProducts = ({
         )}
 
         {/* EMPTY STATE */}
-        {!hasProducts && (
-          <div className="flex flex-col items-center justify-center text-center rounded-2xl border border-dashed border-neutral-300 bg-neutral-50 px-6 py-12">
-            <p className="text-sm font-medium text-neutral-600 mb-2">
-              No featured products yet
-            </p>
-            <p className="text-xs text-neutral-500 max-w-sm">
-              Products marked as “featured” will appear here once available.
-            </p>
-          </div>
-        )}
+      
+{!hasProducts && (
+  <div className="relative overflow-hidden rounded-[28px] border border-dashed border-zinc-300 bg-gradient-to-b from-white to-zinc-50 px-8 py-14 text-center shadow-sm">
+
+    {/* Icon */}
+    <div className="mx-auto mb-5 flex h-18 w-18 items-center justify-center rounded-3xl bg-zinc-100 ring-8 ring-zinc-50">
+      <PackageSearch className="h-8 w-8 text-zinc-500" />
+    </div>
+
+    {/* Badge */}
+    <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-500">
+      <Sparkles className="h-3.5 w-3.5" />
+      Featured Collection Empty
+    </div>
+
+    {/* Heading */}
+    <h3 className="mt-5 text-xl font-semibold tracking-tight text-zinc-900">
+      No featured products yet
+    </h3>
+
+    {/* Description */}
+    <p className="mt-2 text-sm leading-relaxed text-zinc-500 max-w-md mx-auto">
+      Mark products as <span className="font-medium">featured</span> from your
+      admin panel to highlight bestsellers, trending items, or recommended picks.
+    </p>
+
+    {/* CTA */}
+    <Link
+      href={`${ADMIN_URL}/admin/storefront`}
+      className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-black px-5 py-3 text-sm font-medium text-white transition-all hover:scale-[1.02] hover:opacity-90"
+    >
+      Manage Products
+      <ArrowRight className="h-4 w-4" />
+    </Link>
+
+    {/* Helper */}
+    <p className="mt-4 text-xs text-zinc-400">
+      Featured products will automatically appear here once enabled.
+    </p>
+  </div>
+)}
 
         {/* GRID */}
         {hasProducts && (

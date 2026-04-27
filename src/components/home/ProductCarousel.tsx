@@ -6,7 +6,7 @@ import React, { useRef } from "react";
 import Link from "next/link";
 import ProductCard from "../ui/ProductCard";
 import { motion, Variants, useReducedMotion } from "framer-motion";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, PackageSearch, Sparkles } from "lucide-react";
 
 interface ProductCarouselProps {
   data: any[];
@@ -23,6 +23,10 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
   const title = settings?.title || "";
   const shouldReduceMotion = useReducedMotion();
   const scrollRef = useRef<HTMLDivElement>(null);
+const ADMIN_URL =
+  process.env.NEXT_PUBLIC_ADMIN_URL ||
+  "http://localhost:3000";
+
 
   const scroll = (dir: "left" | "right") => {
     if (!scrollRef.current) return;
@@ -36,18 +40,54 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
 
   /* ---------------- EMPTY STATE ---------------- */
   if (!data || data.length === 0) {
-    return (
-      <section className="w-full px-4 sm:px-6 md:px-8 mt-8 md:mt-12">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col items-center justify-center py-20 bg-zinc-50 rounded-2xl border border-dashed border-zinc-200 text-center">
-            <p className="text-xs font-semibold tracking-widest text-zinc-400 uppercase">
+  return (
+    <section className="w-full px-4 sm:px-6 md:px-8 mt-8 md:mt-12">
+      <div className="max-w-7xl mx-auto">
+        {/* EMPTY STATE */}
+        <div className="relative overflow-hidden rounded-3xl border border-dashed border-zinc-300 bg-gradient-to-br from-zinc-50 to-white py-20 px-6">
+          {/* Background Glow */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.12),transparent_35%)]" />
+
+          <div className="relative flex flex-col items-center justify-center text-center max-w-lg mx-auto">
+            {/* Icon */}
+            <div className="w-20 h-20 rounded-2xl bg-amber-100 flex items-center justify-center mb-6 shadow-sm">
+              <PackageSearch className="w-10 h-10 text-amber-600" />
+            </div>
+
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 rounded-full bg-zinc-100 px-4 py-2 mb-4">
+              <Sparkles className="w-4 h-4 text-amber-500" />
+              <span className="text-xs font-semibold tracking-wide text-zinc-600 uppercase">
+                Empty Catalog
+              </span>
+            </div>
+
+            {/* Heading */}
+            <h3 className="text-xl sm:text-2xl font-bold text-zinc-900 mb-3">
               No products available
+            </h3>
+
+            {/* Description */}
+            <p className="text-sm sm:text-base text-zinc-500 leading-relaxed mb-8 max-w-md">
+              Your storefront doesn’t have any products yet. Add products from
+              the admin dashboard to start showcasing them here.
             </p>
+
+            {/* CTA */}
+            <Link
+              href={`${ADMIN_URL}/storefront`}
+              target="_blank"
+              className="inline-flex items-center gap-2 rounded-full bg-black text-white px-6 py-3 text-sm font-medium transition-all hover:scale-105"
+            >
+              Add Products
+              <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
         </div>
-      </section>
-    );
-  }
+      </div>
+    </section>
+  );
+}
 
   return (
     <section className="w-full px-4 sm:px-6 md:px-8 mt-8 md:mt-12">
