@@ -106,15 +106,15 @@ export async function Footer() {
         <div className="md:col-span-7 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-10">
 
           {columns.length > 0 ? (
-            columns.map((col) => (
-              <div key={col.id} className="flex flex-col">
+            columns.map((col, colIndex) => (
+              <div  key={col.id ?? `${col.title}-${colIndex}`} className="flex flex-col">
                 <h3 className="text-white font-semibold mb-4 text-sm">
                   {col.title}
                 </h3>
 
                 <ul className="space-y-2 text-sm opacity-80">
-                  {col.links.map((link) => (
-                    <li key={link.id}>
+                  {col.links.map((link, linkIndex) => (
+                    <li key={link.id ?? `${link.label}-${linkIndex}`}>
                       <Link href={link.url} className="hover:text-white transition">
                         {link.label}
                       </Link>
