@@ -30,7 +30,7 @@ export function Header({ megaMenu }: HeaderProps) {
   
   // Auth & UI State
   const { user, logout } = useAuthStore();
-  const { openSearch } = useUIStore();
+ const { openSearch, openCart } = useUIStore();
   
   // Cart State
   const items = useCartStore((s) => s.items);
@@ -179,18 +179,21 @@ export function Header({ megaMenu }: HeaderProps) {
             </div>
 
             {/* Action 3: Cart Icon */}
-            <Link 
-              href="/cart" 
-              className="text-gray-900 hover:text-[#217A6E] transition-colors p-1 relative group"
-              aria-label="Cart"
-            >
-              <ShoppingCart size={22} strokeWidth={2} className="group-hover:scale-110 transition-transform" />
-              {!isLoading && cartCount > 0 && (
-                <span className="absolute -top-1.5 -right-2 bg-red-500 text-white text-[10px] font-black rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 shadow-sm ring-2 ring-white">
-                  {cartCount}
-                </span>
-              )}
-            </Link>
+            <button 
+  onClick={(e) => {
+    e.preventDefault(); // Prevent any default Link/anchor behavior just in case
+    openCart();
+  }}
+  className="text-gray-900 hover:text-[#217A6E] transition-colors p-1 relative group bg-transparent border-none cursor-pointer"
+  aria-label="Open Cart"
+>
+  <ShoppingCart size={22} strokeWidth={2} className="group-hover:scale-110 transition-transform" />
+  {!isLoading && cartCount > 0 && (
+    <span className="absolute -top-1.5 -right-2 bg-red-500 text-white text-[10px] font-black rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 shadow-sm ring-2 ring-white">
+      {cartCount}
+    </span>
+  )}
+</button>
             
           </div>
         </div>

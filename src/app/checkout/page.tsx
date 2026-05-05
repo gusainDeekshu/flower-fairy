@@ -1,4 +1,5 @@
 // src/app/checkout/page.tsx
+
 "use client";
 
 import { useCartStore } from "@/store/useCartStore";
@@ -9,9 +10,11 @@ import { addressService, Address } from "@/services/address.service";
 import { paymentService } from "@/services/payment.service";
 import { apiClient } from "@/lib/api-client";
 import { toast } from "sonner";
-import { Loader2, Truck } from "lucide-react";
+import { Loader2, ShoppingBag, Truck } from "lucide-react";
 import { PaymentInitiateResponse } from "@/types/payment";
 import { executePaymentFlow } from "@/lib/payment-handler";
+import { load } from "@cashfreepayments/cashfree-js"; // 🔥 Cashfree SDK
+import Link from "next/link";
 
 interface CourierOption {
   courierPartnerId?: string; // Mapped from backend DTO
@@ -58,7 +61,7 @@ export default function CheckoutPage() {
   const [isCalculatingShipping, setIsCalculatingShipping] = useState(false);
   const [shippingError, setShippingError] = useState<string | null>(null);
 
-  // 🔥 RESTORED: Add these states to track backend config flags
+  // 🔥 State for Backend Config Flags
   const [showEstimation, setShowEstimation] = useState<boolean>(true);
   const [topCourierName, setTopCourierName] = useState<string>("Standard Delivery");
   const [topCourierEtd, setTopCourierEtd] = useState<string>("");
@@ -132,7 +135,6 @@ export default function CheckoutPage() {
     setShippingError(null);
     setCourierOptions([]);
 
-    // We must call /shipping/calculate so the backend generates the DB lock (ShippingQuotes)
     const payload = {
       storeId: storeId,
       address: {
@@ -152,24 +154,19 @@ export default function CheckoutPage() {
       const response = await apiClient.post("/shipping/calculate", payload);
       const { data } = response;
 
-      // Update visibility flag based on backend config
       setShowEstimation(data?.showEstimation ?? true);
 
       if (data?.options && data.options.length > 0) {
-        // Multi-Courier Flow
         const sortedOptions = [...data.options].sort((a, b) => Number(a.rate) - Number(b.rate));
         setCourierOptions(sortedOptions);
         
-        // Auto-select the recommended one, or the cheapest
         const recommended = sortedOptions.find((o) => o.isRecommended) || sortedOptions[0];
         handleCourierSelect(recommended);
       } else {
-        // Fallback Flow (If show_estimation is false, backend forces this path)
         setCourierOptions([]);
         setSelectedCourierId(data?.courierPartnerId || "default");
         setShippingCost(data?.shippingCost || 0);
 
-        // Save the preferred courier data for the UI
         setTopCourierName(data?.courierName || "Standard Delivery");
         setTopCourierEtd(data?.estimatedDays || "3-5");
       }
@@ -180,7 +177,6 @@ export default function CheckoutPage() {
       setShippingError(msg);
       toast.error(msg);
       
-      // Reset values on hard failure
       setSelectedCourierId(null);
       setShippingCost(0);
     } finally {
@@ -189,7 +185,6 @@ export default function CheckoutPage() {
   };
 
   const handleCourierSelect = (option: CourierOption) => {
-    // Accommodate both new DTO format and legacy format
     const id = option.courierPartnerId || option.courier_id;
     if (id) {
       setSelectedCourierId(id);
@@ -262,7 +257,6 @@ export default function CheckoutPage() {
     const toastId = toast.loading("Initializing secure payment...");
 
     try {
-      // 1. Create CheckoutSession (Locks intent, inventory, and courier DB quote)
       const sessionRes = await apiClient.post("/checkout/session", {
         storeId: storeId,
         addressId: selectedAddress.id,
@@ -271,14 +265,35 @@ export default function CheckoutPage() {
       });
 
       const session = sessionRes.data;
-
-      // 2. Fetch the payment initiation data using the SESSION ID
       const payRes = await paymentService.initiatePayment(session.id);
-      const responseData: PaymentInitiateResponse = payRes?.data || payRes;
+      
+      const responseData: PaymentInitiateResponse & { paymentSessionId?: string } = payRes?.data || payRes;
 
       toast.dismiss(toastId);
 
-      // 3. Delegate routing
+      // 🔥 CASHFREE SDK INTERCEPTION 🔥
+      if (responseData.provider === "CASHFREE" && responseData.paymentSessionId) {
+        try {
+          const cashfree = await load({
+            mode: process.env.NEXT_PUBLIC_CASHFREE_ENV === "production" ? "production" : "sandbox",
+          });
+
+          if (cashfree) {
+            cashfree.checkout({
+              paymentSessionId: responseData.paymentSessionId,
+            });
+          } else {
+            throw new Error("Failed to load Cashfree SDK");
+          }
+        } catch (cfError) {
+          console.error("Cashfree initialization failed:", cfError);
+          toast.error("Failed to load the payment gateway. Please try again.");
+          setIsProcessing(false);
+        }
+        return; // Prevent execution of executePaymentFlow
+      }
+
+      // 🔁 Fallback for other providers (PayU, PhonePe, Stripe, Razorpay)
       executePaymentFlow(responseData, session.id, router);
     } catch (err: any) {
       toast.dismiss(toastId);
@@ -290,8 +305,17 @@ export default function CheckoutPage() {
 
   if (items.length === 0) {
     return (
-      <div className="p-8 text-center text-gray-500 font-medium mt-10">
-        Your cart is empty. Please add items to proceed.
+      <div className="flex flex-col items-center justify-center py-20 min-h-[50vh]">
+        <div className="bg-gray-50 p-6 rounded-full mb-6">
+          <ShoppingBag size={64} className="text-gray-300" />
+        </div>
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">Your cart is empty</h2>
+        <p className="text-gray-500 mb-8">Please add some items to proceed to checkout.</p>
+        <Link href="/">
+          <Button className="bg-[#217A6E] hover:bg-[#004d36] text-white px-8 py-6 text-lg rounded-xl shadow-md transition-all active:scale-95">
+            Continue Shopping
+          </Button>
+        </Link>
       </div>
     );
   }
@@ -442,7 +466,7 @@ export default function CheckoutPage() {
 
         <div className="space-y-3 max-h-40 overflow-y-auto pr-2 mb-6">
           {items.map((item) => (
-            <div key={item.productId} className="flex justify-between text-sm">
+            <div key={`${item.productId}-${item.variantId}`} className="flex justify-between text-sm">
               <span className="text-gray-700 truncate pr-4">
                 {item.name} <span className="text-gray-400">x{item.quantity}</span>
               </span>
@@ -498,7 +522,9 @@ export default function CheckoutPage() {
                             </span>
                           )}
                         </p>
-                        <p className="text-xs text-gray-500">Est. Delivery: {option.etd} days</p>
+                        {showEstimation && option.etd && (
+                          <p className="text-xs text-gray-500">Est. Delivery: {option.etd} days</p>
+                        )}
                       </div>
                     </div>
                     <span className="font-bold">₹{option.rate}</span>
@@ -507,25 +533,41 @@ export default function CheckoutPage() {
               })}
             </div>
           ) : (
-            /* 🔥 RESTORED: Dynamic Fallback UI respecting the showEstimation flag */
-            <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl flex items-center gap-3">
-              <div className="p-2 bg-white rounded-full shadow-sm">
-                <span className="text-lg">🚚</span>
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-gray-900">
-                  {showEstimation ? topCourierName : "Standard Delivery"}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {shippingError ? (
-                    <span className="text-red-500">{shippingError}</span>
-                  ) : showEstimation && topCourierEtd ? (
-                    `Delivery by: ${topCourierEtd} days`
-                  ) : (
-                    "Shipping charges will be updated at final checkout."
-                  )}
-                </p>
-              </div>
+            <div className="space-y-2">
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">
+                Selected Delivery Partner
+              </p>
+              <label className="flex items-center justify-between p-3 border rounded-lg cursor-default transition-all border-[#217A6E] bg-[#217A6E]/5 ring-1 ring-[#217A6E]">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="radio"
+                    name="courier_fallback"
+                    checked={true}
+                    readOnly
+                    className="accent-[#217A6E] w-4 h-4"
+                  />
+                  <div>
+                    <p className="font-medium text-sm flex items-center gap-2">
+                      {topCourierName || "Standard Delivery"}
+                      <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded">
+                        Best
+                      </span>
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {shippingError ? (
+                        <span className="text-red-500">{shippingError}</span>
+                      ) : showEstimation && topCourierEtd ? (
+                        `Est. Delivery: ${topCourierEtd} days`
+                      ) : (
+                        "Shipping timeline confirmed at dispatch."
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <span className="font-bold text-gray-900">
+                  {shippingCost === 0 ? "FREE" : `₹${shippingCost.toFixed(2)}`}
+                </span>
+              </label>
             </div>
           )}
         </div>

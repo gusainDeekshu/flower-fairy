@@ -10,6 +10,7 @@ import MegaMenu from "@/components/layout/MegaMenu";
 
 // 🔥 NEW: Import the Search Modal
 import SearchModal from "@/components/layout/SearchModal"; 
+import { CartDrawer } from "./cart/CartDrawer";
 
 export const metadata: Metadata = {
   title: "AE Naturals | Premium Gifts",
@@ -36,6 +37,7 @@ export default function RootLayout({
             <AuthProvider>
               {/* 🔥 NEW: Mount the modal globally within the providers */}
               <SearchModal />
+              <CartDrawer /> {/* 2. DROP THIS HERE */}
               
               <Header megaMenu={<MegaMenu />} />
               
