@@ -24,6 +24,7 @@ export default function MegaMenuClient({ groups }: { groups: any[] }) {
         return (
           <div
             key={group.id}
+            // 🔥 Restored 'relative' here so the dropdown aligns to this specific word
             className="relative h-full flex items-center group/nav"
             onMouseEnter={() => !isLink && setActiveGroup(group.id)}
           >
@@ -68,7 +69,7 @@ export default function MegaMenuClient({ groups }: { groups: any[] }) {
               </button>
             )}
 
-            {/* MEGA PANEL - ROUNDED SQUARE & FITTED CONTENT */}
+            {/* MEGA PANEL - LEFT ALIGNED TO TEXT */}
             <AnimatePresence>
               {isActive && !isLink && (
                 <motion.div
@@ -77,8 +78,7 @@ export default function MegaMenuClient({ groups }: { groups: any[] }) {
                   exit={{ opacity: 0, y: 5 }}
                   transition={{ duration: 0.15, ease: "easeOut" }}
                   className="
-                    absolute left-1/2 top-[80%] z-50
-                    -translate-x-1/2
+                    absolute left-0 top-[90%] z-50
                     pt-0
                   "
                 >
@@ -87,7 +87,7 @@ export default function MegaMenuClient({ groups }: { groups: any[] }) {
 
                   <div
                     className="
-                      w-[min(1000px,95vw)]
+                      w-[min(600px,95vw)]
                       overflow-hidden
                       rounded-lg /* Soft rounded square corners */
                       border border-gray-200

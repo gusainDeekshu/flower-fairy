@@ -3,16 +3,28 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { 
-  Search, ShoppingCart, User, Phone, Mail, 
-  Home, LayoutGrid, Gift, MessageSquare, LogOut, Package, Settings, ChevronDown
+import {
+  Search,
+  ShoppingCart,
+  User,
+  Phone,
+  Mail,
+  Home,
+  LayoutGrid,
+  Gift,
+  MessageSquare,
+  LogOut,
+  Package,
+  Settings,
+  ChevronDown,
+  Menu,
 } from "lucide-react";
 import Link from "next/link";
 import { BRAND } from "@/config/brand.config";
 
 // --- HOOKS & STORES ---
 import { useAuthStore } from "@/store/useAuthStore";
-import { useCartStore } from "@/store/useCartStore"; 
+import { useCartStore } from "@/store/useCartStore";
 import { useUIStore } from "@/store/useUIStore";
 
 // --- COMPONENTS & SERVICES ---
@@ -20,7 +32,7 @@ import { OtpModal } from "@/components/auth/OtpModal";
 import { apiClient } from "@/lib/api-client";
 
 interface HeaderProps {
-  megaMenu?: React.ReactNode; 
+  megaMenu?: React.ReactNode;
 }
 
 export function Header({ megaMenu }: HeaderProps) {
@@ -28,11 +40,12 @@ export function Header({ megaMenu }: HeaderProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false); // 🔥 Added scroll state
   const dropdownRef = useRef<HTMLDivElement>(null);
-  
+
   // Auth & UI State
   const { user, logout } = useAuthStore();
-  const { openSearch, openCart } = useUIStore();
-  
+  // Inside the Header component, extract 'openMobileMenu' from the store:
+  const { openSearch, openCart, openMobileMenu } = useUIStore();
+
   // Cart State
   const items = useCartStore((s) => s.items);
   const isLoading = useCartStore((s) => s.isLoading);
@@ -41,7 +54,10 @@ export function Header({ megaMenu }: HeaderProps) {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsDropdownOpen(false);
       }
     };
@@ -61,27 +77,26 @@ export function Header({ megaMenu }: HeaderProps) {
 
   const handleLogout = async () => {
     try {
-      await apiClient.post('/auth/logout');
+      await apiClient.post("/auth/logout");
     } catch (error) {
       console.warn("Backend logout failed, clearing local state.");
     } finally {
       logout();
       setIsDropdownOpen(false);
-      window.location.href = "/"; 
+      window.location.href = "/";
     }
   };
 
   return (
     <>
       {/* 🔥 Conditionally apply background, border, and shadow based on isScrolled */}
-      <header 
+      <header
         className={`w-full sticky top-0 z-50 transition-all duration-300 ${
-          isScrolled 
-            ? "bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-200" 
+          isScrolled
+            ? "bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-200"
             : "bg-white shadow-none border-b border-transparent"
         }`}
       >
-        
         {/* 1. Ultra-Thin Top Utility Bar */}
         <div className="bg-[#217A6E] text-white py-1.5 px-4 md:px-8 flex justify-between items-center text-[11px] font-medium tracking-wide">
           <div className="flex items-center gap-6">
@@ -95,34 +110,51 @@ export function Header({ megaMenu }: HeaderProps) {
             </div>
           </div>
           <div className="flex items-center gap-4 uppercase tracking-widest text-[10px]">
-            <Link href="/track" className="hover:text-green-200 transition-colors">Track Order</Link>
+            <Link
+              href="/track"
+              className="hover:text-green-200 transition-colors"
+            >
+              Track Order
+            </Link>
             <span className="opacity-40">|</span>
-            <Link href="/customer-care" className="hover:text-green-200 transition-colors">Support</Link>
+            <Link
+              href="/customer-care"
+              className="hover:text-green-200 transition-colors"
+            >
+              Support
+            </Link>
           </div>
         </div>
 
         {/* 2. Main Navigation Bar */}
         <div className="px-4 md:px-8 h-[76px] flex items-center justify-between max-w-[1600px] mx-auto">
-          
           {/* LEFT: Logo Section (Premium & Prominent) */}
           <div className="shrink-0 flex items-center lg:flex-[1_1_20%]">
-            <Link 
-              href="/" 
+            {/* 🔥 ADD THIS: Mobile Hamburger Menu Button */}
+            <button 
+              onClick={openMobileMenu}
+              className="lg:hidden p-2 -ml-2 mr-2 text-gray-900 hover:text-[#217A6E] transition-colors"
+              aria-label="Open Mobile Menu"
+            >
+              <Menu size={26} strokeWidth={2.5} />
+            </button>
+            <Link
+              href="/"
               className="flex items-center gap-3 group outline-none rounded-xl focus-visible:ring-2 focus-visible:ring-[#217A6E]/40 p-1 -ml-1 transition-all"
               aria-label={`${BRAND.name} Home`}
             >
               {BRAND.logo?.startsWith("http") || BRAND.logo?.startsWith("/") ? (
                 <div className="relative h-12 sm:h-14 md:h-[60px] flex items-center transition-transform duration-400 ease-out group-hover:scale-[1.04] group-active:scale-95 origin-left">
-                  <img 
-                    src={BRAND.logo} 
-                    alt={BRAND.name} 
+                  <img
+                    src={BRAND.logo}
+                    alt={BRAND.name}
                     className="h-full w-auto object-contain drop-shadow-sm"
                     loading="eager"
                   />
                 </div>
               ) : (
                 <>
-                  <div 
+                  <div
                     className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-white text-xl sm:text-2xl shadow-md shadow-[#217A6E]/20 transition-transform duration-400 ease-out group-hover:scale-[1.06] group-active:scale-95 shrink-0"
                     style={{ backgroundColor: BRAND.theme.primary }}
                   >
@@ -137,44 +169,68 @@ export function Header({ megaMenu }: HeaderProps) {
           </div>
 
           {/* CENTER: Mega Menu */}
-          <div className="hidden lg:flex flex-[1_1_60%] justify-center items-center h-full">
+          {/* 🔥 FIX: Changed classes to prevent taking up empty layout space on mobile */}
+          <div className="flex-1 lg:flex-[1_1_60%] flex justify-center items-center h-full w-0 lg:w-auto">
             {megaMenu}
           </div>
 
           {/* RIGHT: Actions (Search -> User -> Cart) */}
           <div className="flex items-center justify-end gap-5 sm:gap-7 flex-[1_1_20%] shrink-0">
-            
             {/* Action 1: Search Icon */}
-            <button 
-              onClick={openSearch} 
+            <button
+              onClick={openSearch}
               className="text-gray-900 hover:text-[#217A6E] transition-colors p-1 group relative"
               aria-label="Search"
             >
-              <Search size={22} strokeWidth={2} className="group-hover:scale-110 transition-transform" />
+              <Search
+                size={22}
+                strokeWidth={2}
+                className="group-hover:scale-110 transition-transform"
+              />
             </button>
 
             {/* Action 2: User Icon & Dropdown */}
             <div className="relative" ref={dropdownRef}>
-              <button 
-                onClick={() => !user ? setLoginModalOpen(true) : setIsDropdownOpen(!isDropdownOpen)}
+              <button
+                onClick={() =>
+                  !user
+                    ? setLoginModalOpen(true)
+                    : setIsDropdownOpen(!isDropdownOpen)
+                }
                 className="text-gray-900 hover:text-[#217A6E] transition-colors p-1 flex items-center gap-1 group"
                 aria-label="Account"
               >
-                <User size={22} strokeWidth={2} className="group-hover:scale-110 transition-transform" />
+                <User
+                  size={22}
+                  strokeWidth={2}
+                  className="group-hover:scale-110 transition-transform"
+                />
                 {user && (
-                  <ChevronDown size={14} className={`hidden sm:block transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown
+                    size={14}
+                    className={`hidden sm:block transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`}
+                  />
                 )}
               </button>
 
               {user && isDropdownOpen && (
                 <div className="absolute right-0 mt-4 w-60 bg-white border border-gray-100 rounded-2xl shadow-xl py-2 z-[60] animate-in fade-in slide-in-from-top-2 overflow-hidden">
                   <div className="px-5 py-3 border-b border-gray-50 bg-gray-50/50 mb-1">
-                    <p className="text-[10px] text-gray-400 uppercase tracking-widest font-black mb-0.5">Signed In As</p>
-                    <p className="text-sm font-bold text-gray-900 truncate">{user.email}</p>
+                    <p className="text-[10px] text-gray-400 uppercase tracking-widest font-black mb-0.5">
+                      Signed In As
+                    </p>
+                    <p className="text-sm font-bold text-gray-900 truncate">
+                      {user.email}
+                    </p>
                   </div>
-                  
+
                   <div className="px-2 py-1">
-                    <Link href="/profile" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-600 rounded-xl hover:bg-[#217A6E]/5 hover:text-[#217A6E] transition-colors">
+                    <Link
+                      href="/profile"
+                      onClick={() => setIsDropdownOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-600 rounded-xl h
+                    over:bg-[#217A6E]/5 hover:text-[#217A6E] transition-colors"
+                    >
                       <Settings size={16} /> Profile Settings
                     </Link>
                   </div>
@@ -182,7 +238,10 @@ export function Header({ megaMenu }: HeaderProps) {
                   <div className="h-px bg-gray-100 my-1 mx-4" />
 
                   <div className="px-2 py-1">
-                    <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-bold text-red-600 rounded-xl hover:bg-red-50 transition-colors">
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-bold text-red-600 rounded-xl hover:bg-red-50 transition-colors"
+                    >
                       <LogOut size={16} /> Sign Out
                     </button>
                   </div>
@@ -191,37 +250,47 @@ export function Header({ megaMenu }: HeaderProps) {
             </div>
 
             {/* Action 3: Cart Icon */}
-            <button 
+            <button
               onClick={(e) => {
-                e.preventDefault(); 
+                e.preventDefault();
                 openCart();
               }}
               className="text-gray-900 hover:text-[#217A6E] transition-colors p-1 relative group bg-transparent border-none cursor-pointer"
               aria-label="Open Cart"
             >
-              <ShoppingCart size={22} strokeWidth={2} className="group-hover:scale-110 transition-transform" />
+              <ShoppingCart
+                size={22}
+                strokeWidth={2}
+                className="group-hover:scale-110 transition-transform"
+              />
               {!isLoading && cartCount > 0 && (
                 <span className="absolute -top-1.5 -right-2 bg-red-500 text-white text-[10px] font-black rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 shadow-sm ring-2 ring-white">
                   {cartCount}
                 </span>
               )}
             </button>
-            
           </div>
         </div>
       </header>
 
       {/* Auth Modal Integration */}
-      <OtpModal 
-        isOpen={isLoginModalOpen} 
-        onClose={() => setLoginModalOpen(false)} 
-        onSuccess={() => setLoginModalOpen(false)} 
+      <OtpModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setLoginModalOpen(false)}
+        onSuccess={() => setLoginModalOpen(false)}
       />
 
       {/* --- MOBILE BOTTOM NAVIGATION --- */}
       <div className="lg:hidden fixed bottom-0 left-0 z-50 w-full h-[68px] bg-white border-t border-gray-100 flex items-center justify-around px-2 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-        <Link href="/" className="flex flex-col items-center justify-center w-full h-full text-[#217A6E] group">
-          <Home size={22} strokeWidth={2.5} className="group-active:scale-95 transition-transform" />
+        <Link
+          href="/"
+          className="flex flex-col items-center justify-center w-full h-full text-[#217A6E] group"
+        >
+          <Home
+            size={22}
+            strokeWidth={2.5}
+            className="group-active:scale-95 transition-transform"
+          />
           <span className="text-[10px] mt-1 font-bold">Home</span>
         </Link>
         <a
@@ -235,13 +304,31 @@ export function Header({ megaMenu }: HeaderProps) {
           />
           <span className="text-[10px] mt-1 font-medium">Call</span>
         </a>
-        <button onClick={openSearch} className="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-gray-900 group">
-          <Search size={22} strokeWidth={2} className="group-active:scale-95 transition-transform" />
+        <button
+          onClick={openSearch}
+          className="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-gray-900 group"
+        >
+          <Search
+            size={22}
+            strokeWidth={2}
+            className="group-active:scale-95 transition-transform"
+          />
           <span className="text-[10px] mt-1 font-medium">Search</span>
         </button>
-        <button onClick={() => !user ? setLoginModalOpen(true) : window.location.assign('/profile')} className="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-gray-900 group">
-          <User size={22} strokeWidth={2} className="group-active:scale-95 transition-transform" />
-          <span className="text-[10px] mt-1 font-medium">{user ? "Account" : "Login"}</span>
+        <button
+          onClick={() =>
+            !user ? setLoginModalOpen(true) : window.location.assign("/profile")
+          }
+          className="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-gray-900 group"
+        >
+          <User
+            size={22}
+            strokeWidth={2}
+            className="group-active:scale-95 transition-transform"
+          />
+          <span className="text-[10px] mt-1 font-medium">
+            {user ? "Account" : "Login"}
+          </span>
         </button>
       </div>
     </>

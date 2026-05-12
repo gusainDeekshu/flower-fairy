@@ -6,7 +6,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface HeroBannerProps {
@@ -24,10 +24,16 @@ interface HeroBannerProps {
 
 const AUTO_SLIDE_INTERVAL = 6000;
 
+// Swipe Physics Thresholds
+const swipeConfidenceThreshold = 10000;
+const swipePower = (offset: number, velocity: number) => {
+  return Math.abs(offset) * velocity;
+};
+
 export const HeroBanner = ({ data = [], settings }: HeroBannerProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const [direction, setDirection] = useState(0); // -1 for left, 1 for right
+  const [direction, setDirection] = useState(0);
 
   const banners = useMemo(() => {
     const rawBanners = settings?.banners?.length ? settings.banners : data;
@@ -60,19 +66,32 @@ export const HeroBanner = ({ data = [], settings }: HeroBannerProps) => {
     return () => clearInterval(interval);
   }, [goToNext, isPaused, totalSlides]);
 
+  const handleDragEnd = (e: Event, { offset, velocity }: PanInfo) => {
+    const swipe = swipePower(offset.x, velocity.x);
+    if (swipe < -swipeConfidenceThreshold) {
+      goToNext();
+    } else if (swipe > swipeConfidenceThreshold) {
+      goToPrev();
+    }
+  };
+
   if (!totalSlides) return null;
 
   return (
-    // pt-0 removes top padding, allowing it to sit right under the header
-    <section className="w-full bg-white pt-0 pb-8 md:pb-12">
-      {/* Reduced px-2 md:px-4 for very minimal sideways spacing */}
-      <div className=" mx-auto px-3 sm:px-3 md:px-4">
+    // 🔥 FIX: Added z-0 to ensure it establishes a base stacking context strictly below the header
+    <section 
+      className="relative z-0 w-full bg-white pt-0 pb-8 md:pb-12"
+      aria-roledescription="carousel"
+      aria-label="Promotional Offers"
+    >
+      <div className="mx-auto px-3 sm:px-3 md:px-4">
         
-        {/* The Rounded Banner "Island" */}
         <div 
-          className="relative w-full h-[55vh] md:h-[65vh] lg:h-[85vh] min-h-[400px] rounded-[24px] md:rounded-[22px] overflow-hidden bg-neutral-50 shadow-sm"
+          className="relative w-full h-[55vh] md:h-[65vh] lg:h-[85vh] min-h-[400px] rounded-[24px] md:rounded-[22px] overflow-hidden bg-neutral-900 shadow-sm touch-pan-y"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
+          onTouchStart={() => setIsPaused(true)}
+          onTouchEnd={() => setIsPaused(false)}
         >
           <AnimatePresence initial={false} custom={direction} mode="popLayout">
             <motion.div
@@ -82,24 +101,27 @@ export const HeroBanner = ({ data = [], settings }: HeroBannerProps) => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute inset-0 w-full h-full"
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.7}
+              onDragEnd={handleDragEnd}
+              className="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing"
             >
-              {/* The Image */}
               <Image
                 src={banners[currentIndex].imageUrl}
-                alt={banners[currentIndex].title || "Hero Banner"}
+                alt={banners[currentIndex].title || `Hero Banner Slide ${currentIndex + 1}`}
                 fill
-                priority
-                className="object-cover object-center"
+                priority // Always prioritize the active slide for LCP performance
+                className="object-cover object-center select-none"
                 sizes="(max-width: 1600px) 100vw, 1600px"
                 quality={90}
+                draggable={false}
               />
 
-              {/* Optional Text Overlay (Only renders if you pass title/subtitle in CMS) */}
               {(banners[currentIndex].title || banners[currentIndex].subtitle) && (
                 <>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent md:bg-gradient-to-r md:from-black/50 md:via-transparent md:to-transparent" />
-                  <div className="absolute inset-0 flex items-center">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent md:bg-gradient-to-r md:from-black/60 md:via-black/10 md:to-transparent pointer-events-none" />
+                  <div className="absolute inset-0 flex items-center pointer-events-none">
                     <div className="px-8 md:px-16 lg:px-24 w-full">
                       <motion.div 
                         initial={{ y: 20, opacity: 0 }}
@@ -108,21 +130,22 @@ export const HeroBanner = ({ data = [], settings }: HeroBannerProps) => {
                         className="max-w-2xl text-white"
                       >
                         {banners[currentIndex].subtitle && (
-                          <span className="block text-xs md:text-sm font-bold uppercase tracking-[0.2em] mb-3 text-white/90">
+                          <span className="block text-xs md:text-sm font-bold uppercase tracking-[0.2em] mb-3 text-white/90 drop-shadow-md">
                             {banners[currentIndex].subtitle}
                           </span>
                         )}
                         {banners[currentIndex].title && (
-                          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-8 leading-tight">
+                          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-8 leading-tight drop-shadow-lg">
                             {banners[currentIndex].title}
                           </h2>
                         )}
                         {banners[currentIndex].link && (
                           <Link
                             href={banners[currentIndex].link}
-                            className="inline-flex items-center group"
+                            className="inline-flex items-center group pointer-events-auto"
+                            draggable={false}
                           >
-                            <span className="px-8 py-3.5 bg-[#f26522] hover:bg-[#d8581e] text-white text-sm font-bold uppercase tracking-wider rounded-full transition-all duration-300 shadow-md">
+                            <span className="px-8 py-3.5 bg-[#f26522] hover:bg-[#d8581e] text-white text-sm font-bold uppercase tracking-wider rounded-full transition-all duration-300 shadow-xl hover:-translate-y-0.5">
                               {banners[currentIndex].ctaText}
                             </span>
                           </Link>
@@ -135,13 +158,13 @@ export const HeroBanner = ({ data = [], settings }: HeroBannerProps) => {
             </motion.div>
           </AnimatePresence>
 
-          {/* Minimalist Navigation Controls */}
+          {/* Controls */}
           {totalSlides > 1 && (
             <>
               <div className="absolute inset-y-0 left-4 md:left-6 flex items-center z-20">
                 <button
                   onClick={goToPrev}
-                  className="p-2.5 text-white/70 hover:text-gray-900 transition-colors bg-black/20 hover:bg-white rounded-full backdrop-blur-sm shadow-sm"
+                  className="p-2.5 text-white/80 hover:text-gray-900 transition-colors bg-black/20 hover:bg-white rounded-full backdrop-blur-md shadow-sm border border-white/10"
                   aria-label="Previous slide"
                 >
                   <ChevronLeft size={20} strokeWidth={2} />
@@ -150,19 +173,20 @@ export const HeroBanner = ({ data = [], settings }: HeroBannerProps) => {
               <div className="absolute inset-y-0 right-4 md:right-6 flex items-center z-20">
                 <button
                   onClick={goToNext}
-                  className="p-2.5 text-white/70 hover:text-gray-900 transition-colors bg-black/20 hover:bg-white rounded-full backdrop-blur-sm shadow-sm"
+                  className="p-2.5 text-white/80 hover:text-gray-900 transition-colors bg-black/20 hover:bg-white rounded-full backdrop-blur-md shadow-sm border border-white/10"
                   aria-label="Next slide"
                 >
                   <ChevronRight size={20} strokeWidth={2} />
                 </button>
               </div>
 
-              {/* Progress Bars / Dots at the bottom */}
+              {/* Pagination Dots */}
               <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2.5 z-20">
                 {banners.map((_, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentIndex(index)}
+                    aria-label={`Go to slide ${index + 1}`}
                     className="group relative h-1.5 w-8 md:w-12 bg-white/30 rounded-full overflow-hidden"
                   >
                     <div 

@@ -12,6 +12,11 @@ interface UIState {
   isCartOpen: boolean;
   openCart: () => void;
   closeCart: () => void;
+
+  // 🔥 ADD MOBILE MENU STATE
+  isMobileMenuOpen: boolean;
+  openMobileMenu: () => void;
+  closeMobileMenu: () => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -23,4 +28,9 @@ export const useUIStore = create<UIState>((set) => ({
   isCartOpen: false,
   openCart: () => set({ isCartOpen: true }),
   closeCart: () => set({ isCartOpen: false }),
+
+  // 🔥 ADD MOBILE MENU STATE
+  isMobileMenuOpen: false,
+  openMobileMenu: () => set({ isMobileMenuOpen: true }),
+  closeMobileMenu: () => set({ isMobileMenuOpen: false }),
 }));
