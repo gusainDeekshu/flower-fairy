@@ -25,7 +25,7 @@ export const BRAND = {
 
   theme: {
     primary: "#217A6E",
-    secondary: "#22C55E",
+    secondary: "#006044",
     accent: "#F0FDF4",
 
     success: "#10B981",

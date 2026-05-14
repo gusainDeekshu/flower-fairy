@@ -10,6 +10,7 @@ import {
   Youtube,
   Phone,
   Mail,
+  Link as LinkIcon,
 } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 import { BRAND } from "@/config/brand.config";
@@ -41,13 +42,10 @@ export async function Footer() {
 
   return (
     <footer className="bg-[#0f172a] text-gray-300 pt-16 pb-10 px-6 md:px-10">
-
       {/* MAIN GRID */}
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-12">
-
-        {/* 🔥 BRAND BLOCK (FIXED WIDTH + STRONG ALIGNMENT) */}
+        {/* 🔥 BRAND BLOCK */}
         <div className="md:col-span-5 flex flex-col items-start space-y-6">
-
           {/* Logo */}
           <div className="relative w-[220px] h-[90px]">
             <Image
@@ -66,11 +64,17 @@ export async function Footer() {
 
           {/* Contact */}
           <div className="space-y-2 text-sm">
-            <a href={`tel:${BRAND.phone}`} className="flex items-center gap-2 hover:text-white">
-              <Phone size={16}/> {BRAND.phone}
+            <a
+              href={`tel:${BRAND.phone}`}
+              className="flex items-center gap-2 hover:text-white transition-colors"
+            >
+              <Phone size={16} /> {BRAND.phone}
             </a>
-            <a href={`mailto:${BRAND.email}`} className="flex items-center gap-2 hover:text-white">
-              <Mail size={16}/> {BRAND.email}
+            <a
+              href={`mailto:${BRAND.email}`}
+              className="flex items-center gap-2 hover:text-white transition-colors"
+            >
+              <Mail size={16} /> {BRAND.email}
             </a>
           </div>
 
@@ -78,7 +82,8 @@ export async function Footer() {
           <a
             href={`https://wa.me/${BRAND.whatsapp.replace(/\D/g, "")}`}
             target="_blank"
-            className="px-5 py-2.5 rounded-md text-sm font-medium text-white"
+            rel="noopener noreferrer"
+            className="px-5 py-2.5 rounded-md text-sm font-medium text-white transition-opacity hover:opacity-90"
             style={{ backgroundColor: BRAND.theme.primary }}
           >
             Chat on WhatsApp
@@ -86,36 +91,51 @@ export async function Footer() {
 
           {/* Social */}
           <div className="flex gap-3 pt-2">
-            <a href={BRAND.social.facebook} className="p-2 bg-blue-600 rounded-full">
-              <Facebook size={16}/>
+            <a
+              href={BRAND.social.facebook}
+              className="p-2 bg-blue-600 rounded-full hover:scale-110 transition-transform"
+            >
+              <Facebook size={16} />
             </a>
-            <a href={BRAND.social.twitter} className="p-2 bg-sky-400 rounded-full">
-              <Twitter size={16}/>
+            <a
+              href={BRAND.social.twitter}
+              className="p-2 bg-sky-400 rounded-full hover:scale-110 transition-transform"
+            >
+              <Twitter size={16} />
             </a>
-            <a href={BRAND.social.instagram} className="p-2 bg-pink-600 rounded-full">
-              <Instagram size={16}/>
+            <a
+              href={BRAND.social.instagram}
+              className="p-2 bg-pink-600 rounded-full hover:scale-110 transition-transform"
+            >
+              <Instagram size={16} />
             </a>
-            <a href={BRAND.social.youtube} className="p-2 bg-red-600 rounded-full">
-              <Youtube size={16}/>
+            <a
+              href={BRAND.social.youtube}
+              className="p-2 bg-red-600 rounded-full hover:scale-110 transition-transform"
+            >
+              <Youtube size={16} />
             </a>
           </div>
-
         </div>
 
-        {/* 🔥 LINK COLUMNS (ALIGNED TOP) */}
+        {/* 🔥 LINK COLUMNS */}
         <div className="md:col-span-7 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-10">
-
           {columns.length > 0 ? (
             columns.map((col, colIndex) => (
-              <div  key={col.id ?? `${col.title}-${colIndex}`} className="flex flex-col">
+              <div
+                key={col.id ?? `${col.title}-${colIndex}`}
+                className="flex flex-col"
+              >
                 <h3 className="text-white font-semibold mb-4 text-sm">
                   {col.title}
                 </h3>
-
                 <ul className="space-y-2 text-sm opacity-80">
                   {col.links.map((link, linkIndex) => (
                     <li key={link.id ?? `${link.label}-${linkIndex}`}>
-                      <Link href={link.url} className="hover:text-white transition">
+                      <Link
+                        href={link.url}
+                        className="hover:text-white transition"
+                      >
                         {link.label}
                       </Link>
                     </li>
@@ -124,18 +144,29 @@ export async function Footer() {
               </div>
             ))
           ) : (
-            <div className="text-gray-500 italic">Loading...</div>
+            /* 🔥 PROPER EMPTY STATE */
+            <div className="col-span-full flex items-center gap-5 bg-slate-800/20 border border-slate-800/50 rounded-2xl p-6 mt-2">
+              <div className="p-3 bg-slate-800/60 rounded-full shrink-0">
+                <LinkIcon size={20} className="text-slate-400" />
+              </div>
+              <div>
+                <h4 className="text-slate-300 font-medium text-sm tracking-wide">
+                  Navigation Menu
+                </h4>
+                <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                  Quick links and categories will populate in this area once
+                  configured in the dashboard.
+                </p>
+              </div>
+            </div>
           )}
-
         </div>
-
       </div>
 
       {/* DIVIDER */}
       <div className="max-w-7xl mx-auto mt-14 border-t border-gray-700 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
-
         {/* LEFT */}
-        <p className="text-sm opacity-60">
+        <p className="text-sm opacity-60 text-center md:text-left">
           © {new Date().getFullYear()} {BRAND.name}. All rights reserved.
         </p>
 
@@ -151,9 +182,7 @@ export async function Footer() {
             </span>
           ))}
         </div>
-
       </div>
-
     </footer>
   );
 }
