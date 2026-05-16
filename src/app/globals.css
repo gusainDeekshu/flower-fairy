@@ -1,3 +1,5 @@
+/* src/app/globals.css */
+
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -14,33 +16,61 @@
   --color-border: var(--border);
   --color-ring: var(--ring);
   --radius-xl: var(--radius);
+
+  --font-sans: var(--font-google-sans);
 }
 
 :root {
-  --background: oklch(0.99 0.01 145); /* Very light green tint */
+  --background: oklch(0.99 0.01 145);
   --foreground: oklch(0.25 0.04 145);
-  --primary: oklch(0.35 0.08 145);    /* Deep Forest Green */
+
+  --primary: oklch(0.35 0.08 145);
   --primary-foreground: oklch(0.98 0.01 145);
-  --secondary: oklch(0.65 0.18 145);  /* Vibrant Fresh Green */
+
+  --secondary: oklch(0.65 0.18 145);
   --secondary-foreground: oklch(0.98 0.01 145);
-  --accent: oklch(0.92 0.05 145);     /* Soft Mint */
+
+  --accent: oklch(0.92 0.05 145);
   --accent-foreground: oklch(0.35 0.08 145);
+
   --border: oklch(0.9 0.03 145);
   --ring: oklch(0.35 0.08 145);
+
   --radius: 1.25rem;
 }
 
 @layer base {
-  * { @apply border-border; }
-  body { @apply bg-background text-foreground; }
-  .serif-font { font-family: 'Georgia', serif; }
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    letter-spacing: -0.02em;
+  }
+
+  .serif-font {
+    font-family: "Georgia", serif;
+  }
 }
 
-/* Add this anywhere in globals.css */
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
+
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;

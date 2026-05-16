@@ -14,6 +14,14 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 // 🔥 NEW: Import the Search Modal
 import SearchModal from "@/components/layout/SearchModal"; 
 import { CartDrawer } from "./cart/CartDrawer";
+import { Google_Sans_Flex } from "next/font/google";
+
+
+
+const googleSans = Google_Sans_Flex({
+  subsets: ["latin"],
+  variable: "--font-google-sans",
+});
 
 export const metadata: Metadata = {
  title: "AE Naturals | Nature’s Finest Products",
@@ -38,7 +46,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className="antialiased"
+
+      className={googleSans.variable}
         style={{
           ["--primary" as string]: BRAND.theme.primary,
           ["--secondary" as string]: BRAND.theme.secondary,
