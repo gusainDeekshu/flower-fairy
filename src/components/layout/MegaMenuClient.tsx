@@ -10,7 +10,8 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function MegaMenuClient({ groups }: { groups: any[] }) {
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
-
+const capitalize = (str: string) =>
+  str.charAt(0).toUpperCase() + str.slice(1);
   return (
     <nav
       className="relative flex items-center gap-6 xl:gap-8 h-full"
@@ -40,7 +41,7 @@ export default function MegaMenuClient({ groups }: { groups: any[] }) {
                   hover:text-[#217A6E]
                 "
               >
-                {group.title}
+                {capitalize(group.title)}
               </Link>
             ) : (
               <button
@@ -58,7 +59,7 @@ export default function MegaMenuClient({ groups }: { groups: any[] }) {
                   }
                 `}
               >
-                <span>{group.title}</span>
+                <span>{capitalize(group.title)}</span>
 
                 <ChevronDown
                   className={`
@@ -110,7 +111,7 @@ export default function MegaMenuClient({ groups }: { groups: any[] }) {
                                   text-gray-900
                                 "
                               >
-                                {column.title || "Explore"}
+                                {capitalize(column.title) || "Explore"}
                               </h3>
 
                               <ul className="space-y-3">
@@ -131,7 +132,7 @@ export default function MegaMenuClient({ groups }: { groups: any[] }) {
                                         hover:text-[#217A6E] hover:font-medium
                                       "
                                     >
-                                      {item.label}
+                                      {capitalize(item.label)}
                                     </Link>
                                   </li>
                                 ))}
