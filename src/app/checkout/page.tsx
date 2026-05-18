@@ -16,6 +16,7 @@ import { executePaymentFlow } from "@/lib/payment-handler";
 import { load } from "@cashfreepayments/cashfree-js"; // 🔥 Cashfree SDK
 import Link from "next/link";
 
+
 interface CourierOption {
   courierPartnerId?: string; // Mapped from backend DTO
   courier_id?: string;       // Legacy support
@@ -321,7 +322,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="p-8 max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 items-start">
       {/* LEFT: Address Selection */}
       <div>
         <h2 className="text-xl font-bold mb-4">Delivery Address</h2>
@@ -359,9 +360,9 @@ export default function CheckoutPage() {
         ) : (
           <form
             onSubmit={handleAddAddress}
-            className="space-y-3 bg-white p-6 rounded-xl border border-gray-100"
+            className="space-y-5 bg-white p-5 sm:p-6 rounded-2xl border border-gray-200 shadow-sm w-full overflow-hidden"
           >
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <input
                 className="p-2 border rounded-md w-full"
                 placeholder="First Name"
@@ -410,7 +411,7 @@ export default function CheckoutPage() {
               required
               onChange={(e) => setNewAddress({ ...newAddress, addressLine: e.target.value })}
             />
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <input
                 className="p-2 border rounded-md w-full"
                 placeholder="City"
@@ -443,19 +444,23 @@ export default function CheckoutPage() {
               )}
             </div>
 
-            <div className="flex gap-3 pt-2">
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={() => setShowAddAddressForm(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" className="w-full bg-[#217A6E] hover:bg-[#004d36] text-white">
-                Save Address
-              </Button>
-            </div>
+            <div className="flex flex-col sm:flex-row gap-3 pt-2 w-full">
+  <Button
+    type="button"
+    variant="outline"
+    className="w-full sm:flex-1 h-11 rounded-xl border-gray-300"
+    onClick={() => setShowAddAddressForm(false)}
+  >
+    Cancel
+  </Button>
+
+  <Button
+    type="submit"
+    className="w-full sm:flex-1 h-11 rounded-xl bg-[#217A6E] hover:bg-[#004d36] text-white"
+  >
+    Save Address
+  </Button>
+</div>
           </form>
         )}
       </div>
