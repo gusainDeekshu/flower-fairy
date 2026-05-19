@@ -113,7 +113,17 @@ apiClient.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    const isAuthRoute =
+  originalRequest.url?.includes("/auth/send-otp") ||
+  originalRequest.url?.includes("/auth/verify-otp") ||
+  originalRequest.url?.includes("/auth/verify-phone-otp") ||
+  originalRequest.url?.includes("/auth/refresh");
+
+if (
+  error.response?.status === 401 &&
+  !originalRequest._retry &&
+  !isAuthRoute
+) {
       if (isRefreshing) {
         return new Promise(function (resolve, reject) {
           failedQueue.push({ resolve, reject });

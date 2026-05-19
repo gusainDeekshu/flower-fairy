@@ -1,7 +1,7 @@
 // src/components/auth/OtpModal.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useMutation } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -19,6 +19,9 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { BRAND } from "@/config/brand.config";
 
+const OTP_LENGTH = 6;
+const RESEND_SECONDS = 30;
+
 export function OtpModal({
   isOpen,
   onClose,
@@ -29,28 +32,107 @@ export function OtpModal({
   onSuccess: () => void;
 }) {
   const [step, setStep] = useState(1);
+
   const [identifier, setIdentifier] = useState("");
-  const [otp, setOtp] = useState("");
+
+  const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""));
+  const [phoneOtp, setPhoneOtp] = useState<string[]>(
+    Array(OTP_LENGTH).fill(""),
+  );
 
   const [tempToken, setTempToken] = useState("");
   const [newPhone, setNewPhone] = useState("");
-  const [phoneOtp, setPhoneOtp] = useState("");
+
+  const [resendTimer, setResendTimer] = useState(RESEND_SECONDS);
+  const [canResend, setCanResend] = useState(false);
+
+  const [rateLimitMessage, setRateLimitMessage] = useState("");
+
+  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const phoneOtpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const { syncCart } = useCartStore();
   const setAuth = useAuthStore((s) => s.setAuth);
 
+  // =========================
+  // HELPERS
+  // =========================
+
+  const otpValue = otp.join("");
+  const phoneOtpValue = phoneOtp.join("");
+
+  const startCooldown = () => {
+    setResendTimer(RESEND_SECONDS);
+    setCanResend(false);
+  };
+
+  const resetOtpStates = () => {
+    setOtp(Array(OTP_LENGTH).fill(""));
+    setPhoneOtp(Array(OTP_LENGTH).fill(""));
+  };
+
+  // =========================
+  // TIMER
+  // =========================
+
+  useEffect(() => {
+    if (!(step === 2 || step === 4)) return;
+
+    if (resendTimer <= 0) {
+      setCanResend(true);
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setResendTimer((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [resendTimer, step]);
+
+  // =========================
+  // AUTO FOCUS
+  // =========================
+
+  useEffect(() => {
+    if (step === 2) {
+      otpRefs.current[0]?.focus();
+    }
+
+    if (step === 4) {
+      phoneOtpRefs.current[0]?.focus();
+    }
+  }, [step]);
+
+  // =========================
+  // RESET MODAL
+  // =========================
+
   const resetModal = () => {
     setStep(1);
+
     setIdentifier("");
-    setOtp("");
+
     setTempToken("");
     setNewPhone("");
-    setPhoneOtp("");
+
+    resetOtpStates();
+
+    setResendTimer(RESEND_SECONDS);
+    setCanResend(false);
+
+    setRateLimitMessage("");
+
     onClose();
   };
 
+  // =========================
+  // LOGIN SUCCESS
+  // =========================
+
   const handleLoginSuccess = async (data: any) => {
     setAuth(data.user, data.access_token);
+
     toast.success("Welcome back!");
 
     await new Promise((resolve) => setTimeout(resolve, 50));
@@ -65,41 +147,83 @@ export function OtpModal({
     onSuccess();
   };
 
+  // =========================
+  // HANDLE RATE LIMIT
+  // =========================
+
+  const handleApiError = (err: any, fallback: string) => {
+    const status = err?.response?.status;
+    const message =
+      err?.response?.data?.message || err?.message || fallback;
+
+    if (status === 429) {
+      setRateLimitMessage(message);
+    }
+
+    toast.error(message);
+  };
+
+  // =========================
+  // SEND OTP
+  // =========================
+
   const sendOtpMutation = useMutation({
     mutationFn: (id: string) =>
       apiClient.post("/auth/send-otp", {
         identifier: id,
         type: id.includes("@") ? "email" : "phone",
       }),
+
     onSuccess: () => {
       setStep(2);
+
+      setOtp(Array(OTP_LENGTH).fill(""));
+
+      setRateLimitMessage("");
+
+      startCooldown();
+
       toast.success("OTP sent successfully!");
     },
+
     onError: (err: any) =>
-      toast.error(err?.response?.data?.message || "Failed to send OTP"),
+      handleApiError(err, "Failed to send OTP"),
   });
 
+  // =========================
+  // VERIFY OTP
+  // =========================
+
   const verifyOtpMutation = useMutation({
-    mutationFn: (otpCode: string) =>
+    mutationFn: () =>
       apiClient.post("/auth/verify-otp", {
         identifier,
-        otp: otpCode,
+        otp: otpValue,
       }),
+
     onSuccess: async (resOrData: any) => {
       const data = resOrData?.data || resOrData;
 
       if (data?.requiresPhone) {
         setTempToken(data.tempToken);
+
         setStep(3);
-      } else if (data?.access_token) {
+
+        return;
+      }
+
+      if (data?.access_token) {
         await handleLoginSuccess(data);
       }
     },
+
     onError: (err: any) =>
-      toast.error(
-        err?.response?.data?.message || err?.message || "Invalid OTP",
-      ),
+      handleApiError(err, "Invalid OTP"),
   });
+
+  // =========================
+  // SEND PHONE OTP
+  // =========================
 
   const sendPhoneOtpMutation = useMutation({
     mutationFn: (phone: string) =>
@@ -107,19 +231,35 @@ export function OtpModal({
         identifier: phone,
         type: "phone",
       }),
+
     onSuccess: () => {
       setStep(4);
+
+      setPhoneOtp(Array(OTP_LENGTH).fill(""));
+
+      setRateLimitMessage("");
+
+      startCooldown();
+
       toast.success("OTP sent!");
     },
+
+    onError: (err: any) =>
+      handleApiError(err, "Failed to send OTP"),
   });
 
+  // =========================
+  // VERIFY PHONE OTP
+  // =========================
+
   const verifyPhoneOtpMutation = useMutation({
-    mutationFn: (otpCode: string) =>
+    mutationFn: () =>
       apiClient.post("/auth/verify-phone-otp", {
         phone: newPhone,
-        otp: otpCode,
+        otp: phoneOtpValue,
         tempToken,
       }),
+
     onSuccess: async (resOrData: any) => {
       const data = resOrData?.data || resOrData;
 
@@ -127,11 +267,140 @@ export function OtpModal({
         await handleLoginSuccess(data);
       }
     },
+
     onError: (err: any) =>
-      toast.error(
-        err?.response?.data?.message || err?.message || "Invalid OTP",
-      ),
+      handleApiError(err, "Invalid OTP"),
   });
+
+  // =========================
+  // AUTO VERIFY
+  // =========================
+
+  useEffect(() => {
+    if (step === 2 && otpValue.length === OTP_LENGTH) {
+      verifyOtpMutation.mutate();
+    }
+  }, [otpValue]);
+
+  useEffect(() => {
+    if (step === 4 && phoneOtpValue.length === OTP_LENGTH) {
+      verifyPhoneOtpMutation.mutate();
+    }
+  }, [phoneOtpValue]);
+
+  // =========================
+  // OTP INPUT HANDLER
+  // =========================
+
+  const handleOtpChange = (
+    index: number,
+    value: string,
+    type: "email" | "phone",
+  ) => {
+    if (!/^\d?$/.test(value)) return;
+
+    const currentOtp =
+      type === "email" ? [...otp] : [...phoneOtp];
+
+    currentOtp[index] = value;
+
+    if (type === "email") {
+      setOtp(currentOtp);
+    } else {
+      setPhoneOtp(currentOtp);
+    }
+
+    if (value && index < OTP_LENGTH - 1) {
+      const refs =
+        type === "email" ? otpRefs.current : phoneOtpRefs.current;
+
+      refs[index + 1]?.focus();
+    }
+  };
+
+  // =========================
+  // OTP KEYDOWN
+  // =========================
+
+  const handleOtpKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    index: number,
+    type: "email" | "phone",
+  ) => {
+    const currentOtp = type === "email" ? otp : phoneOtp;
+
+    if (
+      e.key === "Backspace" &&
+      !currentOtp[index] &&
+      index > 0
+    ) {
+      const refs =
+        type === "email" ? otpRefs.current : phoneOtpRefs.current;
+
+      refs[index - 1]?.focus();
+    }
+  };
+
+  // =========================
+  // OTP PASTE
+  // =========================
+
+  const handlePaste = (
+    e: React.ClipboardEvent<HTMLInputElement>,
+    type: "email" | "phone",
+  ) => {
+    e.preventDefault();
+
+    const pasted = e.clipboardData
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, OTP_LENGTH);
+
+    if (!pasted) return;
+
+    const values = pasted.split("");
+
+    while (values.length < OTP_LENGTH) {
+      values.push("");
+    }
+
+    if (type === "email") {
+      setOtp(values);
+    } else {
+      setPhoneOtp(values);
+    }
+  };
+
+  // =========================
+  // RESEND OTP
+  // =========================
+
+  const handleResendOtp = () => {
+    if (!canResend) return;
+
+    setRateLimitMessage("");
+
+    if (step === 2) {
+      sendOtpMutation.mutate(identifier);
+    }
+
+    if (step === 4) {
+      sendPhoneOtpMutation.mutate(newPhone);
+    }
+  };
+
+  // =========================
+  // ENTER SUPPORT
+  // =========================
+
+  const handleEnter = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    action: () => void,
+  ) => {
+    if (e.key === "Enter") {
+      action();
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -139,7 +408,44 @@ export function OtpModal({
     if (step === 1) return "Login / Sign Up";
     if (step === 2) return "Verify OTP";
     if (step === 3) return "Secure Account";
+
     return "Verify Mobile";
+  };
+
+  const renderOtpBoxes = (type: "email" | "phone") => {
+    const currentOtp = type === "email" ? otp : phoneOtp;
+
+    const refs =
+      type === "email" ? otpRefs.current : phoneOtpRefs.current;
+
+    return (
+      <div className="flex items-center justify-center gap-2">
+        {currentOtp.map((digit, index) => (
+          <input
+            key={index}
+            ref={(el) => {
+              refs[index] = el;
+            }}
+            type="text"
+            inputMode="numeric"
+            maxLength={1}
+            value={digit}
+            onChange={(e) =>
+              handleOtpChange(
+                index,
+                e.target.value,
+                type,
+              )
+            }
+            onKeyDown={(e) =>
+              handleOtpKeyDown(e, index, type)
+            }
+            onPaste={(e) => handlePaste(e, type)}
+            className="h-14 w-12 rounded-xl border border-gray-200 text-center text-xl font-black outline-none transition focus:border-[#009688] focus:ring-2 focus:ring-[#009688]/20"
+          />
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -155,23 +461,21 @@ export function OtpModal({
         {/* Close */}
         <button
           onClick={resetModal}
-          className="absolute top-5 right-5 z-20 rounded-full bg-white/90 p-2 text-gray-500 transition hover:text-black"
+          className="absolute right-5 top-5 z-20 rounded-full bg-white/90 p-2 text-gray-500 transition hover:text-black"
         >
           <X size={18} />
         </button>
 
         <div className="grid min-h-[620px] md:grid-cols-[1.15fr_0.85fr]">
-          {/* LEFT BRAND PANEL (DESKTOP) */}
+          {/* LEFT PANEL */}
           <div
-            className="relative hidden md:flex flex-col justify-center px-14 py-16 text-white"
+            className="relative hidden flex-col justify-center px-14 py-16 text-white md:flex"
             style={{
               background: BRAND.theme.primary,
             }}
           >
-            {/* Decorative Glow */}
-            <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top_left,white,transparent_35%)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,white,transparent_35%)] opacity-20" />
 
-            {/* Logo Wrapper - Fixed Dimensions */}
             <div className="relative mb-12 h-[180px] w-[180px]">
               <Image
                 src={BRAND.logo}
@@ -183,28 +487,26 @@ export function OtpModal({
               />
             </div>
 
-            {/* Headline */}
-            <h2 className="text-4xl font-black leading-tight max-w-md">
+            <h2 className="max-w-md text-4xl font-black leading-tight">
               Login now to unlock exclusive offers
             </h2>
 
-            <p className="mt-5 text-white/80 text-base leading-relaxed max-w-md">
-              Access your account, track orders, save favourites, and enjoy
-              seamless shopping with {BRAND.name}.
+            <p className="mt-5 max-w-md text-base leading-relaxed text-white/80">
+              Access your account, track orders, save favourites,
+              and enjoy seamless shopping with {BRAND.name}.
             </p>
 
-            {/* Footer info */}
             <div className="mt-12 space-y-3 text-sm text-white/80">
               <p>{BRAND.phone}</p>
               <p>{BRAND.email}</p>
             </div>
           </div>
 
-          {/* RIGHT FORM PANEL */}
+          {/* RIGHT PANEL */}
           <div className="flex items-center justify-center bg-white px-6 py-10 sm:px-10">
             <div className="w-full max-w-sm">
-              {/* Mobile logo Wrapper - Fixed Dimensions */}
-              <div className="relative mb-8 mx-auto h-[48px] w-[140px] md:hidden">
+              {/* Mobile Logo */}
+              <div className="relative mx-auto mb-8 h-[48px] w-[140px] md:hidden">
                 <Image
                   src={BRAND.logo}
                   alt={BRAND.name}
@@ -214,7 +516,7 @@ export function OtpModal({
                 />
               </div>
 
-              {/* Step icon */}
+              {/* ICON */}
               <div className="mb-8 text-center">
                 <div
                   className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl"
@@ -232,6 +534,12 @@ export function OtpModal({
                 <h3 className="text-2xl font-black text-gray-900">
                   {getStepTitle()}
                 </h3>
+
+                {rateLimitMessage && (
+                  <p className="mt-3 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+                    {rateLimitMessage}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-4">
@@ -241,14 +549,26 @@ export function OtpModal({
                     <input
                       type="text"
                       value={identifier}
-                      onChange={(e) => setIdentifier(e.target.value)}
+                      onChange={(e) =>
+                        setIdentifier(e.target.value)
+                      }
+                      onKeyDown={(e) =>
+                        handleEnter(e, () =>
+                          sendOtpMutation.mutate(identifier),
+                        )
+                      }
                       placeholder="Email or Phone Number"
-                      className="h-14 w-full rounded-xl border border-gray-200 px-5 outline-none transition focus:border-transparent focus:ring-2"
+                      className="h-14 w-full rounded-xl border border-gray-200 px-5 outline-none transition focus:border-[#009688] focus:ring-2 focus:ring-[#009688]/20"
                     />
 
                     <Button
-                      onClick={() => sendOtpMutation.mutate(identifier)}
-                      disabled={!identifier || sendOtpMutation.isPending}
+                      onClick={() =>
+                        sendOtpMutation.mutate(identifier)
+                      }
+                      disabled={
+                        !identifier ||
+                        sendOtpMutation.isPending
+                      }
                       className="h-14 w-full rounded-xl text-base font-bold"
                       style={{
                         backgroundColor: BRAND.theme.primary,
@@ -266,18 +586,16 @@ export function OtpModal({
                 {/* STEP 2 */}
                 {step === 2 && (
                   <>
-                    <input
-                      type="text"
-                      maxLength={6}
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value)}
-                      placeholder="Enter OTP"
-                      className="h-14 w-full rounded-xl border border-gray-200 px-5 text-center text-2xl font-black tracking-[0.25em] outline-none"
-                    />
+                    {renderOtpBoxes("email")}
 
                     <Button
-                      onClick={() => verifyOtpMutation.mutate(otp)}
-                      disabled={otp.length < 6 || verifyOtpMutation.isPending}
+                      onClick={() =>
+                        verifyOtpMutation.mutate()
+                      }
+                      disabled={
+                        otpValue.length < OTP_LENGTH ||
+                        verifyOtpMutation.isPending
+                      }
                       className="h-14 w-full rounded-xl text-base font-bold"
                       style={{
                         backgroundColor: BRAND.theme.primary,
@@ -290,10 +608,34 @@ export function OtpModal({
                       )}
                     </Button>
 
+                    {/* RESEND */}
+                    <div className="text-center">
+                      {canResend ? (
+                        <button
+                          onClick={handleResendOtp}
+                          disabled={
+                            sendOtpMutation.isPending
+                          }
+                          className="text-sm font-bold text-[#009688] hover:underline"
+                        >
+                          Resend OTP
+                        </button>
+                      ) : (
+                        <p className="text-sm text-gray-500">
+                          Resend OTP in{" "}
+                          <span className="font-bold">
+                            {resendTimer}s
+                          </span>
+                        </p>
+                      )}
+                    </div>
+
                     <button
                       onClick={() => {
                         setStep(1);
-                        setOtp("");
+                        setOtp(
+                          Array(OTP_LENGTH).fill(""),
+                        );
                       }}
                       className="flex w-full items-center justify-center gap-2 pt-2 text-sm font-semibold text-gray-500"
                     >
@@ -313,20 +655,38 @@ export function OtpModal({
 
                       <input
                         type="tel"
+                        inputMode="numeric"
                         maxLength={10}
                         value={newPhone}
                         onChange={(e) =>
-                          setNewPhone(e.target.value.replace(/\D/g, ""))
+                          setNewPhone(
+                            e.target.value.replace(
+                              /\D/g,
+                              "",
+                            ),
+                          )
+                        }
+                        onKeyDown={(e) =>
+                          handleEnter(e, () =>
+                            sendPhoneOtpMutation.mutate(
+                              newPhone,
+                            ),
+                          )
                         }
                         placeholder="Mobile Number"
-                        className="h-14 w-full rounded-xl border border-gray-200 pl-16 pr-5 outline-none"
+                        className="h-14 w-full rounded-xl border border-gray-200 pl-16 pr-5 outline-none transition focus:border-[#009688] focus:ring-2 focus:ring-[#009688]/20"
                       />
                     </div>
 
                     <Button
-                      onClick={() => sendPhoneOtpMutation.mutate(newPhone)}
+                      onClick={() =>
+                        sendPhoneOtpMutation.mutate(
+                          newPhone,
+                        )
+                      }
                       disabled={
-                        newPhone.length !== 10 || sendPhoneOtpMutation.isPending
+                        newPhone.length !== 10 ||
+                        sendPhoneOtpMutation.isPending
                       }
                       className="h-14 w-full rounded-xl text-base font-bold"
                       style={{
@@ -345,19 +705,16 @@ export function OtpModal({
                 {/* STEP 4 */}
                 {step === 4 && (
                   <>
-                    <input
-                      type="text"
-                      maxLength={6}
-                      value={phoneOtp}
-                      onChange={(e) => setPhoneOtp(e.target.value)}
-                      placeholder="Enter Mobile OTP"
-                      className="h-14 w-full rounded-xl border border-gray-200 px-5 text-center text-2xl font-black tracking-[0.25em]"
-                    />
+                    {renderOtpBoxes("phone")}
 
                     <Button
-                      onClick={() => verifyPhoneOtpMutation.mutate(phoneOtp)}
+                      onClick={() =>
+                        verifyPhoneOtpMutation.mutate()
+                      }
                       disabled={
-                        phoneOtp.length < 6 || verifyPhoneOtpMutation.isPending
+                        phoneOtpValue.length <
+                          OTP_LENGTH ||
+                        verifyPhoneOtpMutation.isPending
                       }
                       className="h-14 w-full rounded-xl text-base font-bold"
                       style={{
@@ -371,10 +728,35 @@ export function OtpModal({
                       )}
                     </Button>
 
+                    {/* RESEND */}
+                    <div className="text-center">
+                      {canResend ? (
+                        <button
+                          onClick={handleResendOtp}
+                          disabled={
+                            sendPhoneOtpMutation.isPending
+                          }
+                          className="text-sm font-bold text-[#009688] hover:underline"
+                        >
+                          Resend OTP
+                        </button>
+                      ) : (
+                        <p className="text-sm text-gray-500">
+                          Resend OTP in{" "}
+                          <span className="font-bold">
+                            {resendTimer}s
+                          </span>
+                        </p>
+                      )}
+                    </div>
+
                     <button
                       onClick={() => {
                         setStep(3);
-                        setPhoneOtp("");
+
+                        setPhoneOtp(
+                          Array(OTP_LENGTH).fill(""),
+                        );
                       }}
                       className="flex w-full items-center justify-center gap-2 pt-2 text-sm font-semibold text-gray-500"
                     >
@@ -385,9 +767,10 @@ export function OtpModal({
                 )}
               </div>
 
-              {/* Footer */}
+              {/* FOOTER */}
               <p className="mt-8 text-center text-xs leading-relaxed text-gray-400">
-                By continuing, you agree to our Privacy Policy and Terms.
+                By continuing, you agree to our Privacy Policy
+                and Terms.
               </p>
             </div>
           </div>
