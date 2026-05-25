@@ -82,7 +82,26 @@ export const VideoShoppableSection: React.FC<VideoShoppableProps> = ({
     return () => observer.disconnect();
   }, [items]);
 
-  if (!items.length) return null;
+  // Replace: if (!items.length) return null; 
+  // With this:
+
+  if (!items.length) {
+    return (
+      <section className={`w-full bg-zinc-50 ${SECTION_SPACING}`}>
+        <div className={CONTAINER_SPACING}>
+          <div className="flex min-h-[300px] flex-col items-center justify-center rounded-3xl border-2 border-dashed border-zinc-200 bg-white p-8 text-center md:p-12">
+             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-zinc-100">
+              <Play className="h-8 w-8 text-zinc-400" />
+            </div>
+            <h3 className="text-lg font-bold text-zinc-900">Shoppable Video Section</h3>
+            <p className="mt-2 max-w-sm text-sm text-zinc-500">
+              Add video reels and link products from the configuration panel to preview them here.
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className={cn("overflow-hidden bg-white", SECTION_SPACING)}>
