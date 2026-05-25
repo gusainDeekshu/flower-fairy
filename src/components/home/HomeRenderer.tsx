@@ -44,53 +44,47 @@ export default function HomeRenderer({
   if (!sectionsToRender.length) return null;
 
   return (
-    <div className="flex flex-col bg-white min-h-screen pb-24">
-      {/* RENDER SECTIONS */}
+    <div className="w-full flex flex-col gap-0 bg-white">
       {sectionsToRender
-        .filter((section: any) => section.isActive)
-        .map((section: any) => {
+        ?.filter((section) => section.isActive !== false)
+        ?.map((section) => {
           const Component = SECTION_COMPONENTS[section.type];
-
           if (!Component) return null;
 
           const resolvedData = resolveData(section, data);
 
-          const isHeroSection = section.type === "HERO";
+          // Full-width containers config wrapper
+          const isFullWidth = ["HERO", "PROMO_BANNER"].includes(section.type);
 
-return (
-  <section
-    key={section.id}
-    id={section.id}
-    className={cn(
-      "w-full",
-      isHeroSection 
-        ? "mt-0" // Flush with header
-        : "mt-12 md:mt-20 px-4 md:px-0" // Maintain spacing for product sections
-    )}
-  >
-    {/* If not hero, we wrap the component in the standard max-w container */}
-    {isHeroSection ? (
-      <Component
-        data={resolvedData}
-        settings={section.settings || {}}
-      />
-    ) : (
-      <div className="max-w-7xl mx-auto">
-        <Component
-          data={resolvedData}
-          settings={section.settings || {}}
-        />
-      </div>
-    )}
-  </section>
-);        })}
+          return (
+            <section
+              key={section.id}
+              id={section.id}
+              className={cn("w-full", !isFullWidth && "px-4 md:px-0")}
+            >
+              {isFullWidth ? (
+                <Component
+                  data={resolvedData}
+                  settings={section.settings || {}}
+                />
+              ) : (
+                <div className="max-w-7xl mx-auto w-full">
+                  <Component
+                    data={resolvedData}
+                    settings={section.settings || {}}
+                  />
+                </div>
+              )}
+            </section>
+          );
+        })}
     </div>
   );
 }
 
 /**
  * DATA RESOLVER
- * Ensures each section receives the proper backend data
+ * Ensures each section receives the proper backend data configuration array mapping
  */
 function resolveData(section: any, data: any) {
   const settings = section.settings || {};
@@ -118,6 +112,17 @@ function resolveData(section: any, data: any) {
       return data?.[sourceKey] || [];
 
     case "COLLECTIONS":
+      // FIX: Filter down to the single matching selection using collectionId settings
+      if (settings?.collectionId && data?.collections) {
+        const selectedCollection = data.collections.find(
+          (c: any) => String(c.id) === String(settings.collectionId)
+        );
+        // Wrap in an array so collection = data[0] remains safe and functional
+        if (selectedCollection) {
+          return [selectedCollection];
+        }
+      }
+      // Fallback matching setup
       return data?.collections || [];
 
     case "BLOG_SECTION":
@@ -127,11 +132,12 @@ function resolveData(section: any, data: any) {
     case "PROMO_BANNER":
       return data?.banners || [];
 
-    case "VIDEO_SHOPPABLE":
-      // Stored directly in admin block settings
+    // 🚀 ADD THIS CASE HERE
+    case 'VIDEO_SHOPPABLE':
+      // The config panel saves the reels inside settings.slides, so we return that!
       return settings.slides || [];
 
     default:
-      return null;
+      return [];
   }
 }
