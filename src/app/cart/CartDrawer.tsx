@@ -12,6 +12,7 @@ import { useState } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { OtpModal } from "@/components/auth/OtpModal";
 import { useRouter } from "next/navigation";
+import { resolveSingleProductImage } from "@/utils/media-normalization"; // 🔥 IMPORT RESOLVER HELPER
 
 export function CartDrawer() {
   const { isCartOpen, closeCart } = useUIStore();
@@ -27,6 +28,7 @@ export function CartDrawer() {
   const user = useAuthStore((s) => s.user);
 
   const [isOtpOpen, setIsOtpOpen] = useState(false);
+  
   return (
     <>
       {/* Background Overlay */}
@@ -71,14 +73,16 @@ export function CartDrawer() {
             </div>
           ) : (
             <div className="space-y-4">
-              {items.map((item) => (
-                <div
+              {items.map((item) => {
+   const staticImageUrl =
+    resolveSingleProductImage(item.image) || "/placeholder-product.png";
+                return (<div
                   key={`${item.productId}-${item.variantId}`}
                   className="flex gap-4 border-b border-gray-50 pb-4"
                 >
                   <div className="relative w-20 h-20 bg-gray-100 rounded-lg overflow-hidden shrink-0">
                     <Image
-                      src={item.image || "/placeholder.png"}
+                      src={staticImageUrl}
                       alt={item.name}
                       fill
                       sizes="80px"
@@ -137,8 +141,8 @@ export function CartDrawer() {
                       </button>
                     </div>
                   </div>
-                </div>
-              ))}
+                </div>)
+              })}
             </div>
           )}
         </div>
@@ -177,16 +181,15 @@ export function CartDrawer() {
         )}
       </div>
 
-
       <OtpModal
-  isOpen={isOtpOpen}
-  onClose={() => setIsOtpOpen(false)}
-  onSuccess={() => {
-    setIsOtpOpen(false);
-    closeCart();
-    router.push("/checkout");
-  }}
-/>
+        isOpen={isOtpOpen}
+        onClose={() => setIsOtpOpen(false)}
+        onSuccess={() => {
+          setIsOtpOpen(false);
+          closeCart();
+          router.push("/checkout");
+        }}
+      />
     </>
   );
 }

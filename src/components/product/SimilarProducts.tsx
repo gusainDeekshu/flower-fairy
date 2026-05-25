@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ProductApi } from "@/services/product.service";
+import { resolveFirstProductImage } from "@/utils/media-normalization";
 
 interface SimilarProductsProps {
   category: any; // Can be a string or the populated {id, name, slug} object
@@ -50,10 +51,7 @@ export default async function SimilarProducts({
                 )
               : 0;
             // Use the first image array item OR the single image string based on your schema
-            const displayImage =
-              (item.images && item.images[0]) ||
-              item.image ||
-              "/placeholder.png";
+            const displayImage = resolveFirstProductImage(item?.images) || "/placeholder-product.png";
 
             return (
               <Link

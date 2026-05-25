@@ -12,6 +12,7 @@ import {
   CreditCard,
   Truck,
 } from "lucide-react";
+import { resolveFirstProductImage } from "@/utils/media-normalization";
 
 const fetcher = async (url: string) => {
   try {
@@ -183,15 +184,18 @@ export default function UserOrderDetailsPage({
                     className="p-4 flex items-center gap-4 hover:bg-gray-50/50 transition-colors"
                   >
                     <div className="h-16 w-16 bg-gray-50 rounded-lg border border-gray-100 flex-shrink-0 flex items-center justify-center overflow-hidden p-1">
-                      {item?.product?.images?.[0] ? (
-                        <img
-                          src={item.product.images[0]}
-                          alt={item.product?.name || "product"}
-                          className="h-full w-full object-contain mix-blend-multiply"
-                        />
-                      ) : (
-                        <Package className="h-6 w-6 text-gray-300" />
-                      )}
+                      {resolveFirstProductImage(item?.product?.images) ? (
+  <img
+    src={
+      resolveFirstProductImage(item?.product?.images) ||
+      "/placeholder-product.png"
+    }
+    alt={item.product?.name || "product"}
+    className="h-full w-full object-contain mix-blend-multiply"
+  />
+) : (
+  <Package className="h-6 w-6 text-gray-300" />
+)}
                     </div>
                     
                     <div className="flex-1 min-w-0">

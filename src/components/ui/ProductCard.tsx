@@ -1,12 +1,17 @@
+//src\components\ui\ProductCard.tsx
+
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Star } from "lucide-react";
 import { AddToCartButton } from "@/components/product/AddToCartButton";
 import { cn } from "@/lib/utils";
-
+import {
+  normalizeMediaCollection,
+  resolveFirstProductImage,
+} from "@/utils/media-normalization"; // 🔥 IMPORT RESOLVER HELPER
 
 interface ProductCardProps {
   product: {
@@ -17,12 +22,15 @@ interface ProductCardProps {
     rating?: number;
     reviewCount?: number;
     category?: { name: string } | string;
-    variants: any[]; // Strictly required in the new architecture
-    isCodEnabled:boolean;
+    variants: any[];
+    isCodEnabled: boolean;
   };
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
   // 1. Derive base pricing entirely from variants
   const variants = product.variants || [];
 
@@ -52,28 +60,104 @@ export default function ProductCard({ product }: ProductCardProps) {
   // Default to the first variant if available for the AddToCart payload
   const [selectedVariant] = useState(variants[0] || null);
 
+  // 🔥 3. Media Handling & Hover Extraction
+  // const staticImageUrl = resolveFirstProductImage(product.images) || "/placeholder-product.png";
+
+  // Safely parse out raw media strings to extract dynamic paths
+  let rawMediaArray: string[] = [];
+  try {
+    rawMediaArray = Array.isArray(product.images)
+      ? product.images
+      : typeof product.images === "string"
+        ? JSON.parse(product.images)
+        : [];
+  } catch {
+    rawMediaArray = [];
+  }
+
+  // Scan files for video extensions or native graphic interchange formats (GIFs)
+  // 🔥 Normalize all media properly
+  const normalizedMedia = normalizeMediaCollection(product.images);
+
+  // First static image fallback
+  const staticImage = normalizedMedia.find((m) => m.type === "image") || null;
+
+  const staticImageUrl = staticImage?.url || "/placeholder-product.png";
+
+  // Find first hoverable media
+  const hoverVideo = normalizedMedia.find((m) => m.type === "video");
+
+  const hoverGif = normalizedMedia.find((m) => m.type === "gif");
+
+  const hasDynamicHoverMedia = !!(hoverVideo || hoverGif);
+
   return (
     <article
-  className={cn(
-    "group relative flex flex-col h-full rounded-2xl border border-neutral-200",
-    "bg-white overflow-hidden transition-all duration-300",
-    "hover:shadow-lg hover:-translate-y-0.5",
-    "focus-within:ring-2 focus-within:ring-black/10"
-  )}
->
-      {/* IMAGE SECTION */}
+      className={cn(
+        "group relative flex flex-col h-full rounded-2xl border border-neutral-200",
+        "bg-white overflow-hidden transition-all duration-300",
+        "hover:shadow-lg hover:-translate-y-0.5",
+        "focus-within:ring-2 focus-within:ring-black/10",
+      )}
+    >
+      {/* IMAGE / VIDEO HOVER SECTION */}
       <Link
         href={`/product/${product.slug}`}
         className="relative block aspect-[4/5] bg-neutral-100 overflow-hidden"
         aria-label={product.name}
+        onMouseEnter={() => {
+          setIsHovered(true);
+
+          requestAnimationFrame(() => {
+            if (videoRef.current) {
+              videoRef.current.currentTime = 0;
+              videoRef.current.play().catch(() => {});
+            }
+          });
+        }}
+        onMouseLeave={() => {
+          setIsHovered(false);
+          if (videoRef.current) {
+            videoRef.current.pause();
+            videoRef.current.currentTime = 0; // Rewind video back to frame one
+          }
+        }}
       >
-        <Image
-          src={product.images?.[0] || "/placeholder-product.png"}
-          alt={product.name}
-          fill
-          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-          className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-        />
+        {/* 🔥 DYNAMIC HOVER CONDITIONAL RENDER */}
+        {isHovered && hasDynamicHoverMedia ? (
+          hoverVideo ? (
+            <video
+              ref={videoRef}
+              src={hoverVideo.url}
+              poster={hoverVideo.posterUrl || undefined}
+              autoPlay // 🔥 Forces instantaneous playback upon hover attachment
+              muted // 🔥 Required by browsers to permit programmatic autoplay execution
+              loop // 🔥 Continuous seamless playback loop
+              playsInline // 🔥 Prevents iOS Safari from snapping into fullscreen native players
+              className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 z-0"
+            />
+          ) : (
+            <div className="absolute inset-0 w-full h-full z-0">
+              <Image
+                src={hoverGif!.url}
+                alt={`${product.name} Preview`}
+                fill
+                className="object-cover"
+                unoptimized // Keep animated frames moving, avoids Next.js static asset parsing freeze
+              />
+            </div>
+          )
+        ) : (
+          /* DEFAULT RESOLVED STATIC FALLBACK */
+          <Image
+            src={staticImageUrl}
+            alt={product.name}
+            fill
+            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+            className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+            priority={false}
+          />
+        )}
 
         {discountPercent > 0 && (
           <span className="absolute top-2 left-2 z-10 rounded-md bg-red-600 text-white text-[10px] font-semibold px-2 py-1">
@@ -83,7 +167,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       </Link>
 
       {/* CONTENT SECTION */}
-      <div className="flex flex-col flex-grow p-3 sm:p-4">
+      <div className="flex flex-col flex-grow p-3 sm:p-4 z-10 bg-white">
         {/* Rating */}
         {product.rating && (
           <div className="flex items-center gap-1 mb-1 text-xs text-neutral-600">
@@ -132,13 +216,13 @@ export default function ProductCard({ product }: ProductCardProps) {
             product={{
               id: product.id,
               name: product.name,
-              price: currentPrice, // Injected resolved variant price
+              price: currentPrice,
               images: product.images,
               variants: variants,
-              isCodEnabled:product.isCodEnabled,
+              isCodEnabled: product.isCodEnabled,
             }}
             variantId={selectedVariant?.id}
-            stock={selectedVariant?.stock || 0} // Injected resolved variant stock
+            stock={selectedVariant?.stock || 0}
           />
         </div>
       </div>

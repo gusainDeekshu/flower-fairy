@@ -10,6 +10,7 @@ import { useCartStore } from '@/store/useCartStore';
 import { WishlistItem } from '@/types/profile';
 import Image from 'next/image';
 import {apiClient} from '@/lib/api-client';
+import { resolveFirstProductImage } from '@/utils/media-normalization';
 
 export function WishlistTab() {
   const [items, setItems] = useState<WishlistItem[]>([]);
@@ -59,7 +60,7 @@ export function WishlistTab() {
         productId: item.product.id, 
         name: item.product.name, 
         price: item.product.price, 
-        image: item.product.images[0], 
+        image: resolveFirstProductImage(item.product?.images) || '', 
         quantity: 1 
       });
       // Remove from wishlist after moving to cart
@@ -104,7 +105,7 @@ export function WishlistTab() {
               <div key={item.id} className="border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow bg-white flex flex-col relative group">
                 <div className="relative w-full aspect-square rounded-lg mb-4 overflow-hidden bg-gray-50">
                   <Image 
-                    src={item.product.images[0] || '/placeholder.jpg'} 
+                    src={resolveFirstProductImage(item.product?.images)  || '/placeholder.jpg'} 
                     alt={item.product.name} 
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-500"

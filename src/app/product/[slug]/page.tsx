@@ -17,6 +17,7 @@ import APlusRenderer from "@/components/product/aplus/APlusRenderer";
 import ProductDetails from "@/components/product/ProductDetails";
 import SimilarProducts from "@/components/product/SimilarProducts";
 import StickyAddToCart from "@/components/product/StickyAddToCart";
+import { resolveOnlyProductImages } from "@/utils/media-normalization"; // 🔥 IMPORT RESOLVER HELPER
 
 export default async function ProductPage({
   params,
@@ -46,6 +47,7 @@ export default async function ProductPage({
   if (!product) {
     notFound();
   }
+  const resolvedProductImages= resolveOnlyProductImages(product.images); // Type assertion for now, can be improved with proper typing in ProductApi
 
   // 5. Render the Amazon-style layout in strict order
   return (
@@ -54,7 +56,7 @@ export default async function ProductPage({
         {/* 1. HERO SECTION */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
           <div className="lg:col-span-5">
-            <ProductGallery images={product.images || []} name={product.name} />
+            <ProductGallery images={resolvedProductImages || []} name={product.name} />
           </div>
 
           <div className="lg:col-span-7">
