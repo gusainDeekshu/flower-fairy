@@ -10,7 +10,9 @@ import { cn } from "@/lib/utils";
 
 export default function MegaMenuClient({ groups }: { groups: any[] }) {
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
-  const [dropdownPosition, setDropdownPosition] = useState<"left" | "right">("left");
+  const [dropdownPosition, setDropdownPosition] = useState<"left" | "right">(
+    "left",
+  );
   const navRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const pathname = usePathname();
 
@@ -22,13 +24,15 @@ export default function MegaMenuClient({ groups }: { groups: any[] }) {
     if (!element) return "left";
 
     const rect = element.getBoundingClientRect();
-    const dropdownWidth = 600;
-    const rightEdge = rect.right + dropdownWidth;
+
+    const dropdownWidth = Math.min(600, window.innerWidth * 0.95);
+
     const viewportWidth = window.innerWidth;
 
-    if (rightEdge > viewportWidth) {
+    if (rect.left + dropdownWidth > viewportWidth) {
       return "right";
     }
+
     return "left";
   };
 
@@ -111,28 +115,38 @@ export default function MegaMenuClient({ groups }: { groups: any[] }) {
                   exit={{ opacity: 0, y: 5 }}
                   transition={{ duration: 0.15, ease: "easeOut" }}
                   className={cn(
-                    "absolute top-[90%] z-50 pt-0",
-                    dropdownPosition === "right" ? "right-0" : "left-0"
+                    "absolute top-full z-50",
+                    dropdownPosition === "right" ? "right-0" : "left-0",
                   )}
                 >
-                  <div className={cn(
-                    "absolute -top-4 w-full h-4 bg-transparent",
-                    dropdownPosition === "right" ? "right-0" : "left-0"
-                  )} />
                   <div
                     className={cn(
-                      "w-[min(600px,95vw)]",
+                      "absolute -top-2 w-full h-2 bg-transparent",
+                      dropdownPosition === "right" ? "right-0" : "left-0",
+                    )}
+                  />
+                  <div
+                    className={cn(
+                      "w-[600px] max-w-[95vw]",
                       "overflow-hidden",
                       "rounded-lg",
                       "border border-gray-200",
                       "bg-white",
                       "shadow-xl",
-                      dropdownPosition === "right" && "origin-top-right"
+                      dropdownPosition === "right" && "origin-top-right",
                     )}
                   >
                     <div className="grid grid-cols-12 items-stretch">
                       <div className="col-span-8 px-8 py-8 bg-white">
-                        <div className="grid grid-cols-3 gap-x-6 gap-y-8">
+                        <div
+                          className="grid gap-x-6 gap-y-8"
+                          style={{
+                            gridTemplateColumns: `repeat(${Math.min(
+                              group.columns?.length || 1,
+                              3,
+                            )}, minmax(0, 1fr))`,
+                          }}
+                        >
                           {group.columns?.map((column: any) => (
                             <div key={column.id}>
                               {column.showHeading !== false && column.title && (
@@ -161,6 +175,7 @@ export default function MegaMenuClient({ groups }: { groups: any[] }) {
                                       className={cn(
                                         "block",
                                         "text-sm text-gray-600",
+                                        "leading-5 break-words",
                                         "transition-colors duration-200",
                                         "hover:text-[#217A6E] hover:font-medium",
                                       )}
