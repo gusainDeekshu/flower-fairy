@@ -5,23 +5,17 @@ export const BRAND = {
   useStoreName: "flowery-fairy-store",
   logo: "https://res.cloudinary.com/djunjtr5l/image/upload/f_auto,q_auto/v1778848925/logo_rogjqa.png", // <-- Add your logo here (emoji or image path)
 
-
   phone: "+91 9027159589",
   whatsapp: "+91 9027159589",
   email: "support@flowerfairyindia.com",
 
-
-
-
-
-  address:
-    "Dehradun, Uttarakhand",
+  address: "Dehradun, Uttarakhand",
 
   social: {
     instagram: "https://www.instagram.com/aenaturalsofficial/reels/",
     facebook: "https://www.facebook.com/Aenaturalsofficial/",
     twitter: "https://x.com/aenaturalsoffcl",
-    youtube: "https://www.youtube.com/@aenaturals"
+    youtube: "https://www.youtube.com/@aenaturals",
   },
 
   theme: {
@@ -58,7 +52,6 @@ export const BRAND = {
       hover: "0.08",
       active: "0.16",
       focus: "0.24",
-    }
+    },
   },
-
 };
