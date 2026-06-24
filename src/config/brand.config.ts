@@ -1,20 +1,21 @@
 // src\config\brand.config.ts
 
 export const BRAND = {
-  name: "AE Naturals",
-  useStoreName: "ae-naturals",
+  name: "Flowery-Fairy",
+  useStoreName: "flowery-fairy-store",
   logo: "https://res.cloudinary.com/djunjtr5l/image/upload/f_auto,q_auto/v1778848925/logo_rogjqa.png", // <-- Add your logo here (emoji or image path)
 
-  phone: "+91 8553463261",
-  whatsapp: "+91 8553463261",
-  email: "care@aenaturals.in",
+
+  phone: "+91 9027159589",
+  whatsapp: "+91 9027159589",
+  email: "support@flowerfairyindia.com",
 
 
 
 
 
   address:
-    "39/4, near Global Village front gate, Pattanagere, Rajarajeshwari Nagar, Bengaluru, Karnataka 560059",
+    "Dehradun, Uttarakhand",
 
   social: {
     instagram: "https://www.instagram.com/aenaturalsofficial/reels/",
@@ -24,9 +25,9 @@ export const BRAND = {
   },
 
   theme: {
-    primary: "#217A6E",
-    secondary: "#006044",
-    accent: "#F0FDF4",
+    primary: "#606c38",
+    secondary: "#283618",
+    accent: "#fefae0",
 
     success: "#10B981",
     warning: "#F59E0B",
@@ -34,10 +35,10 @@ export const BRAND = {
     info: "#3B82F6",
 
     neutral: {
-      light: "#F9FAFB",
-      dark: "#0F1715",
+      light: "#dda15e",
+      dark: "#bc6c25",
       border: "#E5E7EB",
-      muted: "#6B7280",
+      muted: "#502858",
     },
 
     // 🔥 ADD THESE (Missing in your system)
